@@ -1,0 +1,73 @@
+version: '3'
+services:
+  mariadb:
+    image: mariadb:10.3
+    restart: always
+    depends_on:
+      - loki
+    logging:
+      driver: loki
+      options:
+        loki-url: "http://loki:3100/loki/api/v1/push"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-moviefinder}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-moviefinder}
+      MYSQL_USER: ${MYSQL_USER:-moviefinder}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-moviefinder}
+    volumes:
+      - mariadb:/var/lib/mysql
+    ports:
+      - 3306:3306
+  ##############################
+  #       Cache Service        #
+  ##############################
+  redis:
+    image: redis:5.0
+    restart: always
+    depends_on:
+      - loki
+    logging:
+      driver: loki
+      options:
+        loki-url: "http://loki:3100/loki/api/v1/push"
+    volumes:
+      - redis:/data
+  cache:
+    image: fabiocicerchia/go-proxy-cache
+    restart: always
+    depends_on:
+      - loki
+    logging:
+      driver: loki
+      options:
+        loki-url: "http://loki:3100/loki/api/v1/push"
+
+  ##############################
+  #       Observability        #
+  ##############################
+  prometheus:
+    image: prom/prometheus
+    restart: always
+  loki:
+    image: grafana/loki
+    restart: always
+    volumes:
+      - loki:/loki
+  grafana:
+    image: grafana/grafana-oss
+    restart: always
+    ports:
+      - 3000:3000
+    environment:
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    volumes:
+      - grafana:/var/lib/grafana
+      - ./observability/grafana.ini:/etc/grafana/grafana.ini
+
+volumes:
+  mariadb:
+  redis:
+  grafana:
+  loki:
