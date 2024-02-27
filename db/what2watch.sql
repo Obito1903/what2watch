@@ -1,5 +1,4 @@
 -- TABLE
-CREATE TABLE demo (ID integer primary key, Name varchar(20), Hint text );
 CREATE TABLE genre (
     genre_id INT PRIMARY KEY,
     genre_name VARCHAR(255) UNIQUE
@@ -7,6 +6,7 @@ CREATE TABLE genre (
 CREATE TABLE movie (
     movie_id INT PRIMARY KEY,
     title VARCHAR(255),
+    description TEXT,
     year INT,
     genre_id INT,
     path_to_image VARCHAR(255),
