@@ -4,7 +4,7 @@ run:
 	uvicorn main:app --reload
 
 build:
-	docker build -t api .
+	docker build -t engine .
 
 run-docker: build
-	docker run -p 8000:8000 api
+	docker run -p 8000:8000 engine

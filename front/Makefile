@@ -1,4 +1,4 @@
-.PHONY: build run-docker
+.PHONY: run build run-docker
 
 run:
 	npm run dev
