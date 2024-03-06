@@ -1,14 +1,10 @@
-version: '3'
+version: "3"
 services:
   mariadb:
     image: mariadb:10.3
     restart: always
     depends_on:
-      - loki
-    logging:
-      driver: loki
-      options:
-        loki-url: "http://loki:3100/loki/api/v1/push"
+      - agent
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-moviefinder}
       MYSQL_DATABASE: ${MYSQL_DATABASE:-moviefinder}
@@ -22,37 +18,37 @@ services:
   #       Cache Service        #
   ##############################
   redis:
-    image: redis:5.0
+    image: redis:7
     restart: always
     depends_on:
-      - loki
-    logging:
-      driver: loki
-      options:
-        loki-url: "http://loki:3100/loki/api/v1/push"
+      - agent
     volumes:
       - redis:/data
   cache:
     image: fabiocicerchia/go-proxy-cache
     restart: always
     depends_on:
-      - loki
-    logging:
-      driver: loki
-      options:
-        loki-url: "http://loki:3100/loki/api/v1/push"
-
+      - agent
   ##############################
   #       Observability        #
   ##############################
   prometheus:
     image: prom/prometheus
     restart: always
+    command:
+      - --web.enable-remote-write-receiver
+      - --enable-feature=native-histograms
+      - --config.file=/etc/prometheus/prometheus.yml
   loki:
     image: grafana/loki
     restart: always
+    command: -config.file=/mnt/config/loki-config.yaml
+    ports:
+      - 3100:3100
+      - 9096:9096
     volumes:
       - loki:/loki
+      - ./observability/loki.yaml:/mnt/config/loki-config.yaml:ro
   grafana:
     image: grafana/grafana-oss
     restart: always
@@ -64,7 +60,27 @@ services:
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
     volumes:
       - grafana:/var/lib/grafana
-      - ./observability/grafana.ini:/etc/grafana/grafana.ini
+      - ./observability/provisioning:/etc/grafana/provisioning:ro
+      - ./observability/grafana.ini:/etc/grafana/grafana.ini:ro
+      - ./observability/dashboards:/var/lib/grafana/dashboards:ro
+  agent:
+    image: grafana/agent:latest
+    restart: always
+    depends_on:
+      - prometheus
+      - loki
+      - grafana
+    ports:
+      - 12346:12345
+    environment:
+      - AGENT_MODE=flow
+    volumes:
+      - ./observability/agent.river:/etc/agent/config.river:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - /etc/agent/config.river
 
 volumes:
   mariadb:

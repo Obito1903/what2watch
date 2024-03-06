@@ -1,0 +1,14 @@
+# Configuration file version
+apiVersion: 1
+
+deleteDatasources:
+  - name: Prometheus
+    orgId: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    url: http://prometheus:9090
+    jsonData:
+      httpMethod: POST
+      prometheusType: Prometheus
