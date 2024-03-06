@@ -1,10 +1,56 @@
 version: "3"
 services:
+  ##############################
+  #    Proxy/Auth Services     #
+  ##############################
+  traefik:
+    image: traefik:v2.5
+    container_name: traefik
+    restart: unless-stopped
+    command:
+      - --api.insecure=true
+      - --api.dashboard=true
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+    ports:
+      - 80:80
+      - 443:443
+      - 8080:8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.1
+    container_name: keycloak
+    restart: unless-stopped
+    command: start-dev --proxy-headers xforwarded --import-realm
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_USER:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_PASSWORD:-admin}
+      KC_HOSTNAME: auth.localhost
+      # KC_HOSTNAME_STRICT: "false"
+      # KC_HOSTNAME_STRICT_HTTPS: "false"
+      # KC_HTTP_ENABLED: "true"
+      PROXY_ADDRESS_FORWARDING: "true"
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.keycloak.rule=Host(`auth.${DOMAIN:-localhost}`)
+      - traefik.http.routers.keycloak.entrypoints=web,websecure
+      - traefik.http.services.keycloak.loadbalancer.server.port=8080
+    volumes:
+      - ./config/keycloak:/opt/keycloak/data/import
+  ##############################
+  #       DB/Cache Services    #
+  ##############################
   mariadb:
     image: mariadb:10.3
-    restart: always
+    container_name: mariadb
+    restart: unless-stopped
     depends_on:
       - agent
+    labels:
+      - traefik.enable=false
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-moviefinder}
       MYSQL_DATABASE: ${MYSQL_DATABASE:-moviefinder}
@@ -14,68 +60,82 @@ services:
       - mariadb:/var/lib/mysql
     ports:
       - 3306:3306
-  ##############################
-  #       Cache Service        #
-  ##############################
   redis:
     image: redis:7
-    restart: always
+    container_name: redis
+    restart: unless-stopped
     depends_on:
       - agent
+    labels:
+      - traefik.enable=false
     volumes:
       - redis:/data
   cache:
     image: fabiocicerchia/go-proxy-cache
-    restart: always
+    container_name: cache
+    restart: unless-stopped
     depends_on:
       - agent
+    labels:
+      - traefik.enable=false
   ##############################
   #       Observability        #
   ##############################
   prometheus:
     image: prom/prometheus
-    restart: always
+    container_name: prometheus
+    restart: unless-stopped
     command:
       - --web.enable-remote-write-receiver
       - --enable-feature=native-histograms
       - --config.file=/etc/prometheus/prometheus.yml
+    labels:
+      - traefik.enable=false
   loki:
     image: grafana/loki
-    restart: always
+    container_name: loki
+    restart: unless-stopped
     command: -config.file=/mnt/config/loki-config.yaml
-    ports:
-      - 3100:3100
-      - 9096:9096
     volumes:
       - loki:/loki
-      - ./observability/loki.yaml:/mnt/config/loki-config.yaml:ro
+      - ./config/observability/loki.yaml:/mnt/config/loki-config.yaml:ro
+    labels:
+      - traefik.enable=false
   grafana:
     image: grafana/grafana-oss
-    restart: always
-    ports:
-      - 3000:3000
+    container_name: grafana
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.grafana.rule=Host(`grafana.${DOMAIN:-localhost}`)
+      - traefik.http.routers.grafana.entrypoints=web
+      - traefik.http.services.grafana.loadbalancer.server.port=3000
     environment:
       - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
     volumes:
       - grafana:/var/lib/grafana
-      - ./observability/provisioning:/etc/grafana/provisioning:ro
-      - ./observability/grafana.ini:/etc/grafana/grafana.ini:ro
-      - ./observability/dashboards:/var/lib/grafana/dashboards:ro
+      - ./config/observability/provisioning:/etc/grafana/provisioning:ro
+      - ./config/observability/grafana.ini:/etc/grafana/grafana.ini:ro
+      - ./config/observability/dashboards:/var/lib/grafana/dashboards:ro
   agent:
     image: grafana/agent:latest
-    restart: always
+    container_name: agent
+    restart: unless-stopped
     depends_on:
       - prometheus
       - loki
       - grafana
-    ports:
-      - 12346:12345
     environment:
       - AGENT_MODE=flow
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.agent.rule=Host(`agent.${DOMAIN:-localhost}`)
+      - traefik.http.routers.agent.entrypoints=web
+      - traefik.http.services.agent.loadbalancer.server.port=12345
     volumes:
-      - ./observability/agent.river:/etc/agent/config.river:ro
+      - ./config/observability/agent.river:/etc/agent/config.river:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
     command:
       - run
@@ -87,3 +147,4 @@ volumes:
   redis:
   grafana:
   loki:
+  hydra:
