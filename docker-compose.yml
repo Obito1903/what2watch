@@ -112,9 +112,12 @@ services:
       - traefik.http.routers.grafana.entrypoints=web
       - traefik.http.services.grafana.loadbalancer.server.port=3000
     environment:
-      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
-      - GF_AUTH_ANONYMOUS_ENABLED=true
-      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      GF_PATHS_PROVISIONING: /etc/grafana/provisioning
+      GF_AUTH_ANONYMOUS_ENABLED: true
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-moviefinder}
+      MYSQL_USER: ${MYSQL_USER:-moviefinder}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-moviefinder}
     volumes:
       - grafana:/var/lib/grafana
       - ./config/observability/provisioning:/etc/grafana/provisioning:ro
