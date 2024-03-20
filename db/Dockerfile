@@ -1,6 +1,6 @@
 FROM golang:1.21-alpine as build
 
-WORKDIR /app
+WORKDIR /build
 
 COPY go.mod .
 RUN go mod download
@@ -12,7 +12,7 @@ FROM alpine:3
 
 WORKDIR /app
 
-COPY --from=build /app/server /app/server
+COPY --from=build /build/server /app/server
 RUN chmod +x /app/server
 
 EXPOSE 8080
