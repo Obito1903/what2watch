@@ -48,3 +48,23 @@ CREATE TABLE user_genre_preferences (
     FOREIGN KEY (user_id) REFERENCES user(user_id),
     FOREIGN KEY (genre_id) REFERENCES genre(genre_id)
 );
+
+-- movie_id corresponds to the movie_id in tmdb
+CREATE TABLE review (
+    review_id INT PRIMARY KEY,
+    rating INT,
+    viewed BOOLEAN,
+    user_id INT,
+    movie_id INT,
+    FOREIGN KEY (user_id) REFERENCES user(user_id),
+);
+
+CREATE TABLE movie_recommendation (
+    group_id INT,
+    user_id INT,
+    accuracy FLOAT,
+    movie_id INT,
+    PRIMARY KEY (movie_id, group_id, user_id),
+    FOREIGN KEY (group_id) REFERENCES user_group(group_id),
+    FOREIGN KEY (user_id) REFERENCES user(user_id),
+);
