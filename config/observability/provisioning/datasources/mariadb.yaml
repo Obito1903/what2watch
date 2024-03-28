@@ -8,10 +8,10 @@ deleteDatasources:
 datasources:
   - name: MySQL
     type: mysql
-    url: http://mariadb:3306
+    url: mariadb:3306
+    user: ${MYSQL_USER}
     jsonData:
       maxLines: 1000
       database: ${MYSQL_DATABASE}
-      user: ${MYSQL_USER}
     secureJsonData:
       password: ${MYSQL_PASSWORD}

@@ -115,6 +115,7 @@ services:
       GF_PATHS_PROVISIONING: /etc/grafana/provisioning
       GF_AUTH_ANONYMOUS_ENABLED: "true"
       GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_INSTALL_PLUGINS: redis-datasource
       MYSQL_DATABASE: ${MYSQL_DATABASE:-moviefinder}
       MYSQL_USER: ${MYSQL_USER:-moviefinder}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-moviefinder}
