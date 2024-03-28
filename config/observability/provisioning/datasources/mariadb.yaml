@@ -1,0 +1,17 @@
+# Configuration file version
+apiVersion: 1
+
+deleteDatasources:
+  - name: Mariadb
+    orgId: 1
+
+datasources:
+  - name: MySQL
+    type: mysql
+    url: mariadb:3306
+    user: ${MYSQL_USER}
+    jsonData:
+      maxLines: 1000
+      database: ${MYSQL_DATABASE}
+    secureJsonData:
+      password: ${MYSQL_PASSWORD}

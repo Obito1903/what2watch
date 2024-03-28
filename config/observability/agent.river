@@ -1,0 +1,87 @@
+//////////////////////
+//     Endpoints    //
+//////////////////////
+loki.write "default" {
+    endpoint {
+        url = "http://loki:3100/loki/api/v1/push"
+    }
+}
+
+prometheus.remote_write "default" {
+  endpoint {
+    url = "http://prometheus:9090/api/v1/write"
+  }
+}
+
+prometheus.exporter.redis "cache" {
+    redis_addr = "http://redis:6379"
+
+}
+
+prometheus.scrape "redis" {
+  targets    = prometheus.exporter.redis.cache.targets
+  forward_to = [prometheus.remote_write.default.receiver]
+}
+
+prometheus.exporter.mysql "db" {
+  data_source_name  = "root:moviefinder@(mariadb:3306)/"
+}
+
+prometheus.scrape "mariadb" {
+  targets    = prometheus.exporter.mysql.db.targets
+  forward_to = [prometheus.remote_write.default.receiver]
+}
+
+prometheus.exporter.self "agent" {
+}
+
+prometheus.scrape "agent" {
+  targets    = prometheus.exporter.self.agent.targets
+  forward_to = [prometheus.remote_write.default.receiver]
+}
+
+prometheus.scrape "loki" {
+  targets    = [
+    {"__address__" = "loki:3100"},
+  ]
+  metrics_path = "/metrics"
+
+  forward_to = [prometheus.remote_write.default.receiver]
+}
+
+discovery.docker "compose" {
+  host = "unix:///var/run/docker.sock"
+}
+
+loki.source.docker "default" {
+  host       = "unix:///var/run/docker.sock"
+  targets    = discovery.docker.compose.targets
+  labels     = {
+    job = "docker",
+  }
+
+  relabel_rules = loki.relabel.add_labels.rules
+
+  forward_to = [loki.write.default.receiver]
+}
+
+loki.relabel "add_labels" {
+  forward_to = []
+
+  rule {
+    action        = "replace"
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    target_label         = "component"
+  }
+  rule {
+    action        = "replace"
+    source_labels = ["__meta_docker_network_label_com_docker_compose_project"]
+    target_label         = "project"
+  }
+
+  rule {
+    action        = "drop"
+    source_labels = ["__meta_docker_network_label_com_docker_compose_project"]
+    regex         = "^([^w]|w(w|h(w|a(w|t(w|2w(hat2w)*(w|a(w|t(w|cw))|h(w|a(w|tw)))))))*([^hw]|h([^aw]|a([^tw]|t([^2w]|2([^w]|w(hat2w)*([^ahw]|a([^tw]|t([^cw]|c[^hw]))|h([^aw]|a([^tw]|t([^2w]|2[^w]))))))))))*(w(w|h(w|a(w|t(w|2w(hat2w)*(w|a(w|t(w|cw))|h(w|a(w|tw)))))))*(h((a(t2?)?)?|at2w(hat2w)*(a(t?|tc)|h(a(t2?)?)?)?))?)?$"
+  }
+}
