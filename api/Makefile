@@ -1,10 +1,10 @@
 .PHONY: run build run-docker
 
 run:
-	uvicorn main:app --reload
+	go run cmd/db/main.go
 
 build:
-	docker build -t api .
+	docker build -t db .
 
 run-docker: build
-	docker run -p 8000:8000 api
+	docker run -p 8123:8080 db

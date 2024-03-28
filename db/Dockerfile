@@ -1,19 +1,13 @@
-FROM golang:1.21-alpine as build
-
-WORKDIR /build
-
-COPY go.mod .
-RUN go mod download
-
-COPY . .
-RUN CGO_ENABLED=0 GOOS=linux GARCH=amd64 go build -o server cmd/db/main.go
-
-FROM alpine:3
+FROM python:3.8
 
 WORKDIR /app
 
-COPY --from=build /build/server /app/server
-RUN chmod +x /app/server
+COPY requirements.txt .
 
-EXPOSE 8080
-CMD ["/app/server"]
+RUN pip install -r requirements.txt
+
+COPY . .
+
+EXPOSE 8000
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
