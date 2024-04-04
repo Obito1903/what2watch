@@ -10,11 +10,9 @@ db_config = {
     'db': 'moviefinder',
 }
 
-conn = MySQLdb.connect(**db_config)
+db = MySQLdb.connect(**db_config)
 
 app = FastAPI()
-
-print(conn)
 
 # USERS
 # MOVIES
@@ -63,7 +61,12 @@ def get_tastes(id: int):
 @app.get("/users/{id}", status_code=200)
 def get_user_infos(id: int):
     
-    return user_infos
+    db.query("""SELECT name, age FROM user
+         WHERE user_id == {id} """)
+    
+    r=db.store_result()
+    
+    return r.fetch_row()
 
 @app.post("/users/{id}", status_code=200)
 def add_user_infos(id: int):
