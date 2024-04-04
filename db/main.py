@@ -61,8 +61,7 @@ def get_tastes(id: int):
 @app.get("/users/{id}", status_code=200)
 def get_user_infos(id: int):
     
-    db.query("""SELECT name, age FROM user
-         WHERE user_id == {id} """)
+    db.query("""SELECT name, age FROM user""")
     
     r=db.store_result()
     
