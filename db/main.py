@@ -61,11 +61,14 @@ def get_tastes(id: int):
 @app.get("/users/{id}", status_code=200)
 def get_user_infos(id: int):
     
-    db.query("""SELECT name, age FROM user""")
+    c=db.cursor()
+    # max_price=5
+    # c.execute("""SELECT spam, eggs, sausage FROM breakfast
+    #         WHERE price < %s""", (max_price,))
     
-    r=db.store_result()
+    c.execute("""SELECT name, age FROM user""")
     
-    return r.fetch_row()
+    return c.fetchone()
 
 @app.post("/users/{id}", status_code=200)
 def add_user_infos(id: int):
