@@ -87,7 +87,7 @@ def remove_user(id: int):
 def create_user(name: str, age: int):
     sql = "INSERT INTO user (name, age) VALUES (%s, %s)"    
     values = (name, 24)
-    name
+    
     c.execute(sql, values)
     
     db.commit()
@@ -98,15 +98,15 @@ def create_user(name: str, age: int):
 # GROUPS
 
 @app.post("/groups", status_code=200)
-def create_group(name: str):
+def create_group(gp_name: str):
     sql = "INSERT INTO user_group (group_name) VALUES (%s)"    
-    values = (name)
+    values = [gp_name]
     
     c.execute(sql, values)
     
     db.commit()
     
-    return "Group : "+name+" is now created"
+    return "Group : "+gp_name+" is now created"
 
 @app.get("/groups/{id}", status_code=200)
 def get_group_infos(id: int):
@@ -120,13 +120,20 @@ def get_group_infos(id: int):
 
 @app.get("/groups/{id}/users", status_code=200)
 def get_group_users(id: int):
+    c.execute("""SELECT name FROM user, user_group_membership WHERE user_group_membership.group_id LIKE %s AND user.user_id = user_group_membership.user_id""" % (id))
     
-    return list_of_group_users
+    return c.fetchall()
 
 @app.post("/groups/{id}/users", status_code=200)
-def add_user_to_group(id: int):
+def add_user_to_group(id: int, user_id: int):
+    sql = "INSERT INTO user_group_membership (user_id, group_id) VALUES (%s, %s)"    
+    values = (user_id, id)
     
-    return username+" is now added to "+groupname
+    c.execute(sql, values)
+    
+    db.commit()
+    
+    return "User added to group"
 
 @app.delete("/groups/{id}/users", status_code=200)
 def remove_user_from_group(id: int):
