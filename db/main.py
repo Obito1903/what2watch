@@ -80,13 +80,20 @@ def remove_movie_from_watched(user_id: int, movie_id: int):
 
 @app.get("/users/{user_id}/recommendations", status_code=200, tags=["Recommendations"])
 def get_recommendations(user_id: int):
+    c.execute("""SELECT * FROM movie_recommendation WHERE user_id LIKE %s""" % (user_id))
     
-    return list_of_recommendations
+    return c.fetchall()
 
 @app.post("/users/{user_id}/recommendations", status_code=200, tags=["Recommendations"])
-def add_recommendations(user_id: int):
+def add_recommendations(user_id: int, movie_id: int, genre_id: int, accuracy: float):
+    sql = "INSERT INTO movie_recommendation (accuracy, group_id, user_id, movie_id) VALUES (%s, %s, %s, %s)"    
+    values = (accuracy, group_id, user_id, movie_id)
     
-    return "Recommendations added"
+    c.execute(sql, values)
+    
+    db.commit()
+    
+    return "Recommendation added"
 
 
 # USERS
