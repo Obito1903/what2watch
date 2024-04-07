@@ -1,3 +1,4 @@
+
 CREATE TABLE genre (
     genre_id INT AUTO_INCREMENT PRIMARY KEY,
     genre_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -6,8 +7,8 @@ CREATE TABLE genre (
 
 CREATE TABLE user_group (
     group_id INT AUTO_INCREMENT PRIMARY KEY,
-    group_id INT AUTO_INCREMENT PRIMARY KEY,
-    group_name VARCHAR(255) UNIQUE
+    group_name VARCHAR(255) UNIQUE,
+    tastes VARCHAR(500)
 );
 
 CREATE TABLE user (
