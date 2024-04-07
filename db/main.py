@@ -11,6 +11,7 @@ db_config = {
 }
 
 db = MySQLdb.connect(**db_config)
+c=db.cursor()
 
 app = FastAPI()
 
@@ -60,38 +61,52 @@ def get_tastes(id: int):
 
 @app.get("/users/{id}", status_code=200)
 def get_user_infos(id: int):
-    
-    c=db.cursor()
-    # max_price=5
-    # c.execute("""SELECT spam, eggs, sausage FROM breakfast
-    #         WHERE price < %s""", (max_price,))
-    
-    c.execute("""SELECT name, age FROM user""")
+    c.execute("""SELECT * FROM user WHERE user_id LIKE %s""" % (id))
     
     return c.fetchone()
 
 @app.post("/users/{id}", status_code=200)
-def add_user_infos(id: int):
+def add_user_infos(id: int, name: str, age: int):
+    sql = "UPDATE user SET name = %s, age = %s WHERE user_id LIKE %s"    
+    values = (name, age, id)
+    c.execute(sql, values)
     
-    return username+" got it's infos updated"
+    db.commit()
+    
+    return "User : "+name+" got updated"
 
 @app.delete("/users/{id}", status_code=200)
-def remove_movie_from_watched(id: int):
+def remove_user(id: int):
+    c.execute("""DELETE FROM user WHERE user_id LIKE %s""" % (id))
     
-    return username+" is now deleted"
+    db.commit()
+    
+    return "User got deleted"
 
 @app.post("/users", status_code=200)
-def create_user(id: int):
+def create_user(name: str, age: int):
+    sql = "INSERT INTO user (name, age) VALUES (%s, %s)"    
+    values = (name, 24)
+    name
+    c.execute(sql, values)
     
-    return username+" is now created"
+    db.commit()
+    
+    return "User : "+name+" is now created"
 
 
 # GROUPS
 
 @app.post("/groups", status_code=200)
-def create_group(id: int):
+def create_group(name: str):
+    sql = "INSERT INTO user_group (group_name) VALUES (%s)"    
+    values = (name)
     
-    return groupname+" is now created"
+    c.execute(sql, values)
+    
+    db.commit()
+    
+    return "Group : "+name+" is now created"
 
 @app.get("/groups/{id}", status_code=200)
 def get_group_infos(id: int):
