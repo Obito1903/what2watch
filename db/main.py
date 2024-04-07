@@ -110,8 +110,9 @@ def create_group(name: str):
 
 @app.get("/groups/{id}", status_code=200)
 def get_group_infos(id: int):
+    c.execute("""SELECT * FROM user_group WHERE group_id LIKE %s""" % (id))
     
-    return group_infos
+    return c.fetchone()
 
 
 # GROUPS
