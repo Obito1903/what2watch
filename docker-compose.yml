@@ -1,6 +1,37 @@
 version: "3"
 services:
   ##############################
+  #    Components Services     #
+  ##############################
+  db-api:
+    build:
+      context: ./db
+      dockerfile: Dockerfile
+    container_name: db-api
+    restart: unless-stopped
+    depends_on:
+      - mariadb
+    environment:
+      DB_HOST: mariadb
+      DB_PORT: 3306
+      DB_USER: ${MYSQL_USER:-moviefinder}
+      DB_PASSWORD: ${MYSQL_PASSWORD:-moviefinder}
+      DB_NAME: ${MYSQL_DATABASE:-moviefinder}
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.db-api.rule=Host(`db-api.${DOMAIN:-localhost}`)
+      - traefik.http.routers.db-api.entrypoints=web,websecure
+  front:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    container_name: front
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.front.rule=Host(`what2watch.${DOMAIN:-localhost}`)
+      - traefik.http.routers.front.entrypoints=web,websecure
+  ##############################
   #    Proxy/Auth Services     #
   ##############################
   traefik:

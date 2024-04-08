@@ -2,7 +2,7 @@ FROM python:3.8
 
 WORKDIR /app
 
-RUN apt install -y \
+RUN apt update && apt install -y \
     default-libmysqlclient-dev \
     build-essential \
     pkg-config
