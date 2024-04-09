@@ -1,12 +1,12 @@
 package main
 
 import (
-	"db/pkg/config"
-	"db/pkg/controllers"
+	"db/pkg/users"
+	"db/pkg/utils"
 	"net/http"
 
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/log"
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/log"
 )
 
 func checkAuth(token string) bool {
@@ -35,17 +35,10 @@ func checkAuth(token string) bool {
 func main() {
 	app := fiber.New()
 
-	config.KeycloakConfig()
+	utils.KeycloakConfig()
+	utils.DBApiConfig()
 
-	app.Post("/login", controllers.GoogleLogin)
-	app.Get("/callback", controllers.GoogleCallback)
-	app.Get("/auth", func(c *fiber.Ctx) error {
-		token := c.Query("token")
-		if checkAuth(token) {
-			return c.SendString("Authenticated")
-		}
-		return c.SendString("Not Authenticated")
-	})
+	users.RegisterUsersRoutes(app)
 
 	log.SetLevel(log.LevelDebug)
 	log.Fatal(app.Listen(":3000"))
