@@ -1,39 +1,51 @@
 
 CREATE TABLE genre (
     genre_id INT AUTO_INCREMENT PRIMARY KEY,
-    genre_id INT AUTO_INCREMENT PRIMARY KEY,
     genre_name VARCHAR(255) UNIQUE
 );
 
 CREATE TABLE user_group (
     group_id INT AUTO_INCREMENT PRIMARY KEY,
-    group_name VARCHAR(255) UNIQUE,
-    tastes VARCHAR(500)
+    group_name VARCHAR(255) UNIQUE
+);
+
+CREATE TABLE group_genres (
+    group_genres_id INT AUTO_INCREMENT PRIMARY KEY,
+    group_id INT,
+    genre_id INT,
+    FOREIGN KEY (group_id) REFERENCES user_group(group_id),
+    FOREIGN KEY (genre_id) REFERENCES genre(genre_id)
 );
 
 CREATE TABLE user (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255),
-    age INT
+    mail VARCHAR(255) UNIQUE,
+    name VARCHAR(255)
 );
 
-CREATE TABLE movie_recommendation (
+CREATE TABLE movie_group_recommendation (
     group_id INT,
+    accuracy FLOAT,
+    movie_id VARCHAR(255),
+    PRIMARY KEY (movie_id, group_id),
+    FOREIGN KEY (group_id) REFERENCES user_group(group_id)
+);
+
+CREATE TABLE movie_user_recommendation (
     user_id INT,
     accuracy FLOAT,
-    movie_id INT,
-    PRIMARY KEY (movie_id, group_id, user_id),
-    FOREIGN KEY (group_id) REFERENCES user_group(group_id),
+    movie_id VARCHAR(255),
+    PRIMARY KEY (movie_id, user_id),
     FOREIGN KEY (user_id) REFERENCES user(user_id)
 );
+
 
 CREATE TABLE review (
     review_id INT AUTO_INCREMENT PRIMARY KEY,
     rating INT,
     viewed BOOLEAN,
     user_id INT,
-    movie_id INT,
+    movie_id VARCHAR(255),
     FOREIGN KEY (user_id) REFERENCES user(user_id)
 );
 
