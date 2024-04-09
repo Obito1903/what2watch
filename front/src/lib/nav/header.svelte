@@ -1,38 +1,18 @@
 <script lang="ts">
-	import { cn } from "$lib/utils.js";
+	import { default as Nav } from '$lib/nav/navbar.svelte';
+    import { default as UserNav } from '$lib/nav/user-nav.svelte';
 
-	let className: string | undefined | null = undefined;
-	export { className as class };
 </script>
 
-<nav class={cn("flex items-center space-x-4 lg:space-x-6", className)}>
-	<a href="/dashboard" class="text-sm font-medium transition-colors hover:text-primary">
-		Overview
-	</a>
 
-	<a
-		href="/dashboard"
-		class="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-	>
-		Preferences
-	</a>
-	<a
-		href="/dashboard"
-		class="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-	>
-		Groups
-	</a>
-	<a
-		href="/dashboard"
-		class="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-	>
-		Recommendations
-	</a>
-
-    <a
-		href="/dashboard"
-		class="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-	>
-		Settings
-	</a>
-</nav>
+<div class="hidden flex-col md:flex">
+	<div class="border-b">
+		<div class="flex h-16 items-center px-4">
+			<Nav class="mx-6"/>
+            <div class="ml-auto flex items-center space-x-4">
+				<!-- <Search /> -->
+				<UserNav/>
+			</div>
+		</div>
+	</div>
+</div>

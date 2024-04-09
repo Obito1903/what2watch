@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { activePage } from "$lib/stores";
-	activePage.set('');
+	activePage.set('terms');
 </script>
 
-
-
-<h1>Welcome</h1>
+<h1>Terms and conditions </h1>
