@@ -26,6 +26,17 @@ type Group struct {
 	GroupName string `json:"group_name"`
 }
 
+// GroupPostRecommendationRequest defines model for GroupPostRecommendationRequest.
+type GroupPostRecommendationRequest struct {
+	Accuracy float32 `json:"accuracy"`
+	MovieId  int     `json:"movie_id"`
+}
+
+// GroupRequest defines model for GroupRequest.
+type GroupRequest struct {
+	Name string `json:"name"`
+}
+
 // GroupResponse defines model for GroupResponse.
 type GroupResponse struct {
 	GroupId int    `json:"group_id"`
@@ -40,7 +51,29 @@ type HTTPValidationError struct {
 // MovieReccomendationResponse defines model for MovieReccomendationResponse.
 type MovieReccomendationResponse struct {
 	Accuracy float32 `json:"accuracy"`
-	MovieId  string  `json:"movie_id"`
+	MovieId  int     `json:"movie_id"`
+}
+
+// UserPostCreateRequest defines model for UserPostCreateRequest.
+type UserPostCreateRequest struct {
+	Mail string `json:"mail"`
+	Name string `json:"name"`
+}
+
+// UserPostMovieRequest defines model for UserPostMovieRequest.
+type UserPostMovieRequest struct {
+	Rating int `json:"rating"`
+}
+
+// UserPostRecommendationRequest defines model for UserPostRecommendationRequest.
+type UserPostRecommendationRequest struct {
+	Accuracy float32 `json:"accuracy"`
+	MovieId  int     `json:"movie_id"`
+}
+
+// UserPostUpdateRequest defines model for UserPostUpdateRequest.
+type UserPostUpdateRequest struct {
+	Name string `json:"name"`
 }
 
 // UserResponse defines model for UserResponse.
@@ -68,38 +101,23 @@ type ValidationError_Loc_Item struct {
 	union json.RawMessage
 }
 
-// CreateGroupGroupsPostParams defines parameters for CreateGroupGroupsPost.
-type CreateGroupGroupsPostParams struct {
-	GpName string `form:"gp_name" json:"gp_name"`
-}
+// CreateGroupGroupsPostJSONRequestBody defines body for CreateGroupGroupsPost for application/json ContentType.
+type CreateGroupGroupsPostJSONRequestBody = GroupRequest
 
-// AddGroupRecommendationsGroupsGroupIdRecommendationsPostParams defines parameters for AddGroupRecommendationsGroupsGroupIdRecommendationsPost.
-type AddGroupRecommendationsGroupsGroupIdRecommendationsPostParams struct {
-	MovieId  int     `form:"movie_id" json:"movie_id"`
-	Accuracy float32 `form:"accuracy" json:"accuracy"`
-}
+// AddGroupRecommendationsGroupsGroupIdRecommendationsPostJSONRequestBody defines body for AddGroupRecommendationsGroupsGroupIdRecommendationsPost for application/json ContentType.
+type AddGroupRecommendationsGroupsGroupIdRecommendationsPostJSONRequestBody = GroupPostRecommendationRequest
 
-// CreateUserUsersPostParams defines parameters for CreateUserUsersPost.
-type CreateUserUsersPostParams struct {
-	Mail string `form:"mail" json:"mail"`
-	Name string `form:"name" json:"name"`
-}
+// CreateUserUsersPostJSONRequestBody defines body for CreateUserUsersPost for application/json ContentType.
+type CreateUserUsersPostJSONRequestBody = UserPostCreateRequest
 
-// AddUserInfosUsersUserIdPostParams defines parameters for AddUserInfosUsersUserIdPost.
-type AddUserInfosUsersUserIdPostParams struct {
-	Name string `form:"name" json:"name"`
-}
+// AddUserInfosUsersUserIdPostJSONRequestBody defines body for AddUserInfosUsersUserIdPost for application/json ContentType.
+type AddUserInfosUsersUserIdPostJSONRequestBody = UserPostUpdateRequest
 
-// AddMovieToWatchedUsersUserIdMoviesMovieIdPostParams defines parameters for AddMovieToWatchedUsersUserIdMoviesMovieIdPost.
-type AddMovieToWatchedUsersUserIdMoviesMovieIdPostParams struct {
-	Rating int `form:"rating" json:"rating"`
-}
+// AddMovieToWatchedUsersUserIdMoviesMovieIdPostJSONRequestBody defines body for AddMovieToWatchedUsersUserIdMoviesMovieIdPost for application/json ContentType.
+type AddMovieToWatchedUsersUserIdMoviesMovieIdPostJSONRequestBody = UserPostMovieRequest
 
-// AddRecommendationsUsersUserIdRecommendationsPostParams defines parameters for AddRecommendationsUsersUserIdRecommendationsPost.
-type AddRecommendationsUsersUserIdRecommendationsPostParams struct {
-	MovieId  int     `form:"movie_id" json:"movie_id"`
-	Accuracy float32 `form:"accuracy" json:"accuracy"`
-}
+// AddRecommendationsUsersUserIdRecommendationsPostJSONRequestBody defines body for AddRecommendationsUsersUserIdRecommendationsPost for application/json ContentType.
+type AddRecommendationsUsersUserIdRecommendationsPostJSONRequestBody = UserPostRecommendationRequest
 
 // AsValidationErrorLoc0 returns the union data inside the ValidationError_Loc_Item as a ValidationErrorLoc0
 func (t ValidationError_Loc_Item) AsValidationErrorLoc0() (ValidationErrorLoc0, error) {

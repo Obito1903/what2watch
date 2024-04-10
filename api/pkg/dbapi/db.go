@@ -4,6 +4,7 @@
 package dbapi
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -88,8 +89,10 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
-	// CreateGroupGroupsPost request
-	CreateGroupGroupsPost(ctx context.Context, params *CreateGroupGroupsPostParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// CreateGroupGroupsPostWithBody request with any body
+	CreateGroupGroupsPostWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateGroupGroupsPost(ctx context.Context, body CreateGroupGroupsPostJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetGroupInfosGroupsGroupIdGet request
 	GetGroupInfosGroupsGroupIdGet(ctx context.Context, groupId int, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -97,8 +100,10 @@ type ClientInterface interface {
 	// GetGroupRecommendationsGroupsGroupIdRecommendationsGet request
 	GetGroupRecommendationsGroupsGroupIdRecommendationsGet(ctx context.Context, groupId int, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// AddGroupRecommendationsGroupsGroupIdRecommendationsPost request
-	AddGroupRecommendationsGroupsGroupIdRecommendationsPost(ctx context.Context, groupId int, params *AddGroupRecommendationsGroupsGroupIdRecommendationsPostParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// AddGroupRecommendationsGroupsGroupIdRecommendationsPostWithBody request with any body
+	AddGroupRecommendationsGroupsGroupIdRecommendationsPostWithBody(ctx context.Context, groupId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AddGroupRecommendationsGroupsGroupIdRecommendationsPost(ctx context.Context, groupId int, body AddGroupRecommendationsGroupsGroupIdRecommendationsPostJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetGroupTastesGroupsGroupIdTastesGet request
 	GetGroupTastesGroupsGroupIdTastesGet(ctx context.Context, groupId int, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -106,8 +111,8 @@ type ClientInterface interface {
 	// RemoveTasteFromGroupGroupsGroupIdTastesGenreIdDelete request
 	RemoveTasteFromGroupGroupsGroupIdTastesGenreIdDelete(ctx context.Context, groupId int, genreId int, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// AddTasteForGroupGroupsGroupIdTastesGenreIdPost request
-	AddTasteForGroupGroupsGroupIdTastesGenreIdPost(ctx context.Context, groupId int, genreId int, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// AddTasteForGroupGroupsGroupIdTastesGenreIdPut request
+	AddTasteForGroupGroupsGroupIdTastesGenreIdPut(ctx context.Context, groupId int, genreId int, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetGroupUsersGroupsGroupIdUsersGet request
 	GetGroupUsersGroupsGroupIdUsersGet(ctx context.Context, groupId int, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -115,14 +120,16 @@ type ClientInterface interface {
 	// RemoveUserFromGroupGroupsGroupIdUsersUserIdDelete request
 	RemoveUserFromGroupGroupsGroupIdUsersUserIdDelete(ctx context.Context, groupId int, userId int, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// AddUserToGroupGroupsGroupIdUsersUserIdPost request
-	AddUserToGroupGroupsGroupIdUsersUserIdPost(ctx context.Context, groupId int, userId int, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// AddUserToGroupGroupsGroupIdUsersUserIdPut request
+	AddUserToGroupGroupsGroupIdUsersUserIdPut(ctx context.Context, groupId int, userId int, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetUserGroupsUserUserIdGroupsGet request
 	GetUserGroupsUserUserIdGroupsGet(ctx context.Context, userId int, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// CreateUserUsersPost request
-	CreateUserUsersPost(ctx context.Context, params *CreateUserUsersPostParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// CreateUserUsersPostWithBody request with any body
+	CreateUserUsersPostWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateUserUsersPost(ctx context.Context, body CreateUserUsersPostJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetUserInfosByMailUsersEmailBymailGet request
 	GetUserInfosByMailUsersEmailBymailGet(ctx context.Context, email string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -133,8 +140,10 @@ type ClientInterface interface {
 	// GetUserInfosUsersUserIdGet request
 	GetUserInfosUsersUserIdGet(ctx context.Context, userId int, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// AddUserInfosUsersUserIdPost request
-	AddUserInfosUsersUserIdPost(ctx context.Context, userId int, params *AddUserInfosUsersUserIdPostParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// AddUserInfosUsersUserIdPostWithBody request with any body
+	AddUserInfosUsersUserIdPostWithBody(ctx context.Context, userId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AddUserInfosUsersUserIdPost(ctx context.Context, userId int, body AddUserInfosUsersUserIdPostJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetSeenMoviesUsersUserIdMoviesGet request
 	GetSeenMoviesUsersUserIdMoviesGet(ctx context.Context, userId int, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -142,14 +151,18 @@ type ClientInterface interface {
 	// RemoveMovieFromWatchedUsersUserIdMoviesMovieIdDelete request
 	RemoveMovieFromWatchedUsersUserIdMoviesMovieIdDelete(ctx context.Context, userId int, movieId int, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// AddMovieToWatchedUsersUserIdMoviesMovieIdPost request
-	AddMovieToWatchedUsersUserIdMoviesMovieIdPost(ctx context.Context, userId int, movieId int, params *AddMovieToWatchedUsersUserIdMoviesMovieIdPostParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// AddMovieToWatchedUsersUserIdMoviesMovieIdPostWithBody request with any body
+	AddMovieToWatchedUsersUserIdMoviesMovieIdPostWithBody(ctx context.Context, userId int, movieId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AddMovieToWatchedUsersUserIdMoviesMovieIdPost(ctx context.Context, userId int, movieId int, body AddMovieToWatchedUsersUserIdMoviesMovieIdPostJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetRecommendationsUsersUserIdRecommendationsGet request
 	GetRecommendationsUsersUserIdRecommendationsGet(ctx context.Context, userId int, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// AddRecommendationsUsersUserIdRecommendationsPost request
-	AddRecommendationsUsersUserIdRecommendationsPost(ctx context.Context, userId int, params *AddRecommendationsUsersUserIdRecommendationsPostParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// AddRecommendationsUsersUserIdRecommendationsPostWithBody request with any body
+	AddRecommendationsUsersUserIdRecommendationsPostWithBody(ctx context.Context, userId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AddRecommendationsUsersUserIdRecommendationsPost(ctx context.Context, userId int, body AddRecommendationsUsersUserIdRecommendationsPostJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetTastesUsersUserIdTastesGet request
 	GetTastesUsersUserIdTastesGet(ctx context.Context, userId int, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -157,12 +170,24 @@ type ClientInterface interface {
 	// RemoveTasteFromUserUsersUserIdTastesGenreIdDelete request
 	RemoveTasteFromUserUsersUserIdTastesGenreIdDelete(ctx context.Context, userId int, genreId int, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// AddTasteForUserUsersUserIdTastesGenreIdPost request
-	AddTasteForUserUsersUserIdTastesGenreIdPost(ctx context.Context, userId int, genreId int, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// AddTasteForUserUsersUserIdTastesGenreIdPut request
+	AddTasteForUserUsersUserIdTastesGenreIdPut(ctx context.Context, userId int, genreId int, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
-func (c *Client) CreateGroupGroupsPost(ctx context.Context, params *CreateGroupGroupsPostParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateGroupGroupsPostRequest(c.Server, params)
+func (c *Client) CreateGroupGroupsPostWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateGroupGroupsPostRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateGroupGroupsPost(ctx context.Context, body CreateGroupGroupsPostJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateGroupGroupsPostRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -197,8 +222,20 @@ func (c *Client) GetGroupRecommendationsGroupsGroupIdRecommendationsGet(ctx cont
 	return c.Client.Do(req)
 }
 
-func (c *Client) AddGroupRecommendationsGroupsGroupIdRecommendationsPost(ctx context.Context, groupId int, params *AddGroupRecommendationsGroupsGroupIdRecommendationsPostParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAddGroupRecommendationsGroupsGroupIdRecommendationsPostRequest(c.Server, groupId, params)
+func (c *Client) AddGroupRecommendationsGroupsGroupIdRecommendationsPostWithBody(ctx context.Context, groupId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddGroupRecommendationsGroupsGroupIdRecommendationsPostRequestWithBody(c.Server, groupId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AddGroupRecommendationsGroupsGroupIdRecommendationsPost(ctx context.Context, groupId int, body AddGroupRecommendationsGroupsGroupIdRecommendationsPostJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddGroupRecommendationsGroupsGroupIdRecommendationsPostRequest(c.Server, groupId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -233,8 +270,8 @@ func (c *Client) RemoveTasteFromGroupGroupsGroupIdTastesGenreIdDelete(ctx contex
 	return c.Client.Do(req)
 }
 
-func (c *Client) AddTasteForGroupGroupsGroupIdTastesGenreIdPost(ctx context.Context, groupId int, genreId int, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAddTasteForGroupGroupsGroupIdTastesGenreIdPostRequest(c.Server, groupId, genreId)
+func (c *Client) AddTasteForGroupGroupsGroupIdTastesGenreIdPut(ctx context.Context, groupId int, genreId int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddTasteForGroupGroupsGroupIdTastesGenreIdPutRequest(c.Server, groupId, genreId)
 	if err != nil {
 		return nil, err
 	}
@@ -269,8 +306,8 @@ func (c *Client) RemoveUserFromGroupGroupsGroupIdUsersUserIdDelete(ctx context.C
 	return c.Client.Do(req)
 }
 
-func (c *Client) AddUserToGroupGroupsGroupIdUsersUserIdPost(ctx context.Context, groupId int, userId int, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAddUserToGroupGroupsGroupIdUsersUserIdPostRequest(c.Server, groupId, userId)
+func (c *Client) AddUserToGroupGroupsGroupIdUsersUserIdPut(ctx context.Context, groupId int, userId int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddUserToGroupGroupsGroupIdUsersUserIdPutRequest(c.Server, groupId, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -293,8 +330,20 @@ func (c *Client) GetUserGroupsUserUserIdGroupsGet(ctx context.Context, userId in
 	return c.Client.Do(req)
 }
 
-func (c *Client) CreateUserUsersPost(ctx context.Context, params *CreateUserUsersPostParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateUserUsersPostRequest(c.Server, params)
+func (c *Client) CreateUserUsersPostWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateUserUsersPostRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateUserUsersPost(ctx context.Context, body CreateUserUsersPostJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateUserUsersPostRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -341,8 +390,20 @@ func (c *Client) GetUserInfosUsersUserIdGet(ctx context.Context, userId int, req
 	return c.Client.Do(req)
 }
 
-func (c *Client) AddUserInfosUsersUserIdPost(ctx context.Context, userId int, params *AddUserInfosUsersUserIdPostParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAddUserInfosUsersUserIdPostRequest(c.Server, userId, params)
+func (c *Client) AddUserInfosUsersUserIdPostWithBody(ctx context.Context, userId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddUserInfosUsersUserIdPostRequestWithBody(c.Server, userId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AddUserInfosUsersUserIdPost(ctx context.Context, userId int, body AddUserInfosUsersUserIdPostJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddUserInfosUsersUserIdPostRequest(c.Server, userId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -377,8 +438,20 @@ func (c *Client) RemoveMovieFromWatchedUsersUserIdMoviesMovieIdDelete(ctx contex
 	return c.Client.Do(req)
 }
 
-func (c *Client) AddMovieToWatchedUsersUserIdMoviesMovieIdPost(ctx context.Context, userId int, movieId int, params *AddMovieToWatchedUsersUserIdMoviesMovieIdPostParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAddMovieToWatchedUsersUserIdMoviesMovieIdPostRequest(c.Server, userId, movieId, params)
+func (c *Client) AddMovieToWatchedUsersUserIdMoviesMovieIdPostWithBody(ctx context.Context, userId int, movieId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddMovieToWatchedUsersUserIdMoviesMovieIdPostRequestWithBody(c.Server, userId, movieId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AddMovieToWatchedUsersUserIdMoviesMovieIdPost(ctx context.Context, userId int, movieId int, body AddMovieToWatchedUsersUserIdMoviesMovieIdPostJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddMovieToWatchedUsersUserIdMoviesMovieIdPostRequest(c.Server, userId, movieId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -401,8 +474,20 @@ func (c *Client) GetRecommendationsUsersUserIdRecommendationsGet(ctx context.Con
 	return c.Client.Do(req)
 }
 
-func (c *Client) AddRecommendationsUsersUserIdRecommendationsPost(ctx context.Context, userId int, params *AddRecommendationsUsersUserIdRecommendationsPostParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAddRecommendationsUsersUserIdRecommendationsPostRequest(c.Server, userId, params)
+func (c *Client) AddRecommendationsUsersUserIdRecommendationsPostWithBody(ctx context.Context, userId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddRecommendationsUsersUserIdRecommendationsPostRequestWithBody(c.Server, userId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AddRecommendationsUsersUserIdRecommendationsPost(ctx context.Context, userId int, body AddRecommendationsUsersUserIdRecommendationsPostJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddRecommendationsUsersUserIdRecommendationsPostRequest(c.Server, userId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -437,8 +522,8 @@ func (c *Client) RemoveTasteFromUserUsersUserIdTastesGenreIdDelete(ctx context.C
 	return c.Client.Do(req)
 }
 
-func (c *Client) AddTasteForUserUsersUserIdTastesGenreIdPost(ctx context.Context, userId int, genreId int, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAddTasteForUserUsersUserIdTastesGenreIdPostRequest(c.Server, userId, genreId)
+func (c *Client) AddTasteForUserUsersUserIdTastesGenreIdPut(ctx context.Context, userId int, genreId int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddTasteForUserUsersUserIdTastesGenreIdPutRequest(c.Server, userId, genreId)
 	if err != nil {
 		return nil, err
 	}
@@ -449,8 +534,19 @@ func (c *Client) AddTasteForUserUsersUserIdTastesGenreIdPost(ctx context.Context
 	return c.Client.Do(req)
 }
 
-// NewCreateGroupGroupsPostRequest generates requests for CreateGroupGroupsPost
-func NewCreateGroupGroupsPostRequest(server string, params *CreateGroupGroupsPostParams) (*http.Request, error) {
+// NewCreateGroupGroupsPostRequest calls the generic CreateGroupGroupsPost builder with application/json body
+func NewCreateGroupGroupsPostRequest(server string, body CreateGroupGroupsPostJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateGroupGroupsPostRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateGroupGroupsPostRequestWithBody generates requests for CreateGroupGroupsPost with any type of body
+func NewCreateGroupGroupsPostRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -468,28 +564,12 @@ func NewCreateGroupGroupsPostRequest(server string, params *CreateGroupGroupsPos
 		return nil, err
 	}
 
-	if params != nil {
-		queryValues := queryURL.Query()
-
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "gp_name", runtime.ParamLocationQuery, params.GpName); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-		queryURL.RawQuery = queryValues.Encode()
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	req, err := http.NewRequest("POST", queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -562,8 +642,19 @@ func NewGetGroupRecommendationsGroupsGroupIdRecommendationsGetRequest(server str
 	return req, nil
 }
 
-// NewAddGroupRecommendationsGroupsGroupIdRecommendationsPostRequest generates requests for AddGroupRecommendationsGroupsGroupIdRecommendationsPost
-func NewAddGroupRecommendationsGroupsGroupIdRecommendationsPostRequest(server string, groupId int, params *AddGroupRecommendationsGroupsGroupIdRecommendationsPostParams) (*http.Request, error) {
+// NewAddGroupRecommendationsGroupsGroupIdRecommendationsPostRequest calls the generic AddGroupRecommendationsGroupsGroupIdRecommendationsPost builder with application/json body
+func NewAddGroupRecommendationsGroupsGroupIdRecommendationsPostRequest(server string, groupId int, body AddGroupRecommendationsGroupsGroupIdRecommendationsPostJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAddGroupRecommendationsGroupsGroupIdRecommendationsPostRequestWithBody(server, groupId, "application/json", bodyReader)
+}
+
+// NewAddGroupRecommendationsGroupsGroupIdRecommendationsPostRequestWithBody generates requests for AddGroupRecommendationsGroupsGroupIdRecommendationsPost with any type of body
+func NewAddGroupRecommendationsGroupsGroupIdRecommendationsPostRequestWithBody(server string, groupId int, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -588,40 +679,12 @@ func NewAddGroupRecommendationsGroupsGroupIdRecommendationsPostRequest(server st
 		return nil, err
 	}
 
-	if params != nil {
-		queryValues := queryURL.Query()
-
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "movie_id", runtime.ParamLocationQuery, params.MovieId); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "accuracy", runtime.ParamLocationQuery, params.Accuracy); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-		queryURL.RawQuery = queryValues.Encode()
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	req, err := http.NewRequest("POST", queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -701,8 +764,8 @@ func NewRemoveTasteFromGroupGroupsGroupIdTastesGenreIdDeleteRequest(server strin
 	return req, nil
 }
 
-// NewAddTasteForGroupGroupsGroupIdTastesGenreIdPostRequest generates requests for AddTasteForGroupGroupsGroupIdTastesGenreIdPost
-func NewAddTasteForGroupGroupsGroupIdTastesGenreIdPostRequest(server string, groupId int, genreId int) (*http.Request, error) {
+// NewAddTasteForGroupGroupsGroupIdTastesGenreIdPutRequest generates requests for AddTasteForGroupGroupsGroupIdTastesGenreIdPut
+func NewAddTasteForGroupGroupsGroupIdTastesGenreIdPutRequest(server string, groupId int, genreId int) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -734,7 +797,7 @@ func NewAddTasteForGroupGroupsGroupIdTastesGenreIdPostRequest(server string, gro
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	req, err := http.NewRequest("PUT", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -817,8 +880,8 @@ func NewRemoveUserFromGroupGroupsGroupIdUsersUserIdDeleteRequest(server string, 
 	return req, nil
 }
 
-// NewAddUserToGroupGroupsGroupIdUsersUserIdPostRequest generates requests for AddUserToGroupGroupsGroupIdUsersUserIdPost
-func NewAddUserToGroupGroupsGroupIdUsersUserIdPostRequest(server string, groupId int, userId int) (*http.Request, error) {
+// NewAddUserToGroupGroupsGroupIdUsersUserIdPutRequest generates requests for AddUserToGroupGroupsGroupIdUsersUserIdPut
+func NewAddUserToGroupGroupsGroupIdUsersUserIdPutRequest(server string, groupId int, userId int) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -850,7 +913,7 @@ func NewAddUserToGroupGroupsGroupIdUsersUserIdPostRequest(server string, groupId
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	req, err := http.NewRequest("PUT", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -892,8 +955,19 @@ func NewGetUserGroupsUserUserIdGroupsGetRequest(server string, userId int) (*htt
 	return req, nil
 }
 
-// NewCreateUserUsersPostRequest generates requests for CreateUserUsersPost
-func NewCreateUserUsersPostRequest(server string, params *CreateUserUsersPostParams) (*http.Request, error) {
+// NewCreateUserUsersPostRequest calls the generic CreateUserUsersPost builder with application/json body
+func NewCreateUserUsersPostRequest(server string, body CreateUserUsersPostJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateUserUsersPostRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateUserUsersPostRequestWithBody generates requests for CreateUserUsersPost with any type of body
+func NewCreateUserUsersPostRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -911,40 +985,12 @@ func NewCreateUserUsersPostRequest(server string, params *CreateUserUsersPostPar
 		return nil, err
 	}
 
-	if params != nil {
-		queryValues := queryURL.Query()
-
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "mail", runtime.ParamLocationQuery, params.Mail); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "name", runtime.ParamLocationQuery, params.Name); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-		queryURL.RawQuery = queryValues.Encode()
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	req, err := http.NewRequest("POST", queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -1051,8 +1097,19 @@ func NewGetUserInfosUsersUserIdGetRequest(server string, userId int) (*http.Requ
 	return req, nil
 }
 
-// NewAddUserInfosUsersUserIdPostRequest generates requests for AddUserInfosUsersUserIdPost
-func NewAddUserInfosUsersUserIdPostRequest(server string, userId int, params *AddUserInfosUsersUserIdPostParams) (*http.Request, error) {
+// NewAddUserInfosUsersUserIdPostRequest calls the generic AddUserInfosUsersUserIdPost builder with application/json body
+func NewAddUserInfosUsersUserIdPostRequest(server string, userId int, body AddUserInfosUsersUserIdPostJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAddUserInfosUsersUserIdPostRequestWithBody(server, userId, "application/json", bodyReader)
+}
+
+// NewAddUserInfosUsersUserIdPostRequestWithBody generates requests for AddUserInfosUsersUserIdPost with any type of body
+func NewAddUserInfosUsersUserIdPostRequestWithBody(server string, userId int, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -1077,28 +1134,12 @@ func NewAddUserInfosUsersUserIdPostRequest(server string, userId int, params *Ad
 		return nil, err
 	}
 
-	if params != nil {
-		queryValues := queryURL.Query()
-
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "name", runtime.ParamLocationQuery, params.Name); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-		queryURL.RawQuery = queryValues.Encode()
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	req, err := http.NewRequest("POST", queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -1178,8 +1219,19 @@ func NewRemoveMovieFromWatchedUsersUserIdMoviesMovieIdDeleteRequest(server strin
 	return req, nil
 }
 
-// NewAddMovieToWatchedUsersUserIdMoviesMovieIdPostRequest generates requests for AddMovieToWatchedUsersUserIdMoviesMovieIdPost
-func NewAddMovieToWatchedUsersUserIdMoviesMovieIdPostRequest(server string, userId int, movieId int, params *AddMovieToWatchedUsersUserIdMoviesMovieIdPostParams) (*http.Request, error) {
+// NewAddMovieToWatchedUsersUserIdMoviesMovieIdPostRequest calls the generic AddMovieToWatchedUsersUserIdMoviesMovieIdPost builder with application/json body
+func NewAddMovieToWatchedUsersUserIdMoviesMovieIdPostRequest(server string, userId int, movieId int, body AddMovieToWatchedUsersUserIdMoviesMovieIdPostJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAddMovieToWatchedUsersUserIdMoviesMovieIdPostRequestWithBody(server, userId, movieId, "application/json", bodyReader)
+}
+
+// NewAddMovieToWatchedUsersUserIdMoviesMovieIdPostRequestWithBody generates requests for AddMovieToWatchedUsersUserIdMoviesMovieIdPost with any type of body
+func NewAddMovieToWatchedUsersUserIdMoviesMovieIdPostRequestWithBody(server string, userId int, movieId int, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -1211,28 +1263,12 @@ func NewAddMovieToWatchedUsersUserIdMoviesMovieIdPostRequest(server string, user
 		return nil, err
 	}
 
-	if params != nil {
-		queryValues := queryURL.Query()
-
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "rating", runtime.ParamLocationQuery, params.Rating); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-		queryURL.RawQuery = queryValues.Encode()
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	req, err := http.NewRequest("POST", queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -1271,8 +1307,19 @@ func NewGetRecommendationsUsersUserIdRecommendationsGetRequest(server string, us
 	return req, nil
 }
 
-// NewAddRecommendationsUsersUserIdRecommendationsPostRequest generates requests for AddRecommendationsUsersUserIdRecommendationsPost
-func NewAddRecommendationsUsersUserIdRecommendationsPostRequest(server string, userId int, params *AddRecommendationsUsersUserIdRecommendationsPostParams) (*http.Request, error) {
+// NewAddRecommendationsUsersUserIdRecommendationsPostRequest calls the generic AddRecommendationsUsersUserIdRecommendationsPost builder with application/json body
+func NewAddRecommendationsUsersUserIdRecommendationsPostRequest(server string, userId int, body AddRecommendationsUsersUserIdRecommendationsPostJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAddRecommendationsUsersUserIdRecommendationsPostRequestWithBody(server, userId, "application/json", bodyReader)
+}
+
+// NewAddRecommendationsUsersUserIdRecommendationsPostRequestWithBody generates requests for AddRecommendationsUsersUserIdRecommendationsPost with any type of body
+func NewAddRecommendationsUsersUserIdRecommendationsPostRequestWithBody(server string, userId int, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -1297,40 +1344,12 @@ func NewAddRecommendationsUsersUserIdRecommendationsPostRequest(server string, u
 		return nil, err
 	}
 
-	if params != nil {
-		queryValues := queryURL.Query()
-
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "movie_id", runtime.ParamLocationQuery, params.MovieId); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "accuracy", runtime.ParamLocationQuery, params.Accuracy); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-		queryURL.RawQuery = queryValues.Encode()
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	req, err := http.NewRequest("POST", queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -1410,8 +1429,8 @@ func NewRemoveTasteFromUserUsersUserIdTastesGenreIdDeleteRequest(server string, 
 	return req, nil
 }
 
-// NewAddTasteForUserUsersUserIdTastesGenreIdPostRequest generates requests for AddTasteForUserUsersUserIdTastesGenreIdPost
-func NewAddTasteForUserUsersUserIdTastesGenreIdPostRequest(server string, userId int, genreId int) (*http.Request, error) {
+// NewAddTasteForUserUsersUserIdTastesGenreIdPutRequest generates requests for AddTasteForUserUsersUserIdTastesGenreIdPut
+func NewAddTasteForUserUsersUserIdTastesGenreIdPutRequest(server string, userId int, genreId int) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -1443,7 +1462,7 @@ func NewAddTasteForUserUsersUserIdTastesGenreIdPostRequest(server string, userId
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	req, err := http.NewRequest("PUT", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -1494,8 +1513,10 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
-	// CreateGroupGroupsPostWithResponse request
-	CreateGroupGroupsPostWithResponse(ctx context.Context, params *CreateGroupGroupsPostParams, reqEditors ...RequestEditorFn) (*CreateGroupGroupsPostResponse, error)
+	// CreateGroupGroupsPostWithBodyWithResponse request with any body
+	CreateGroupGroupsPostWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateGroupGroupsPostResponse, error)
+
+	CreateGroupGroupsPostWithResponse(ctx context.Context, body CreateGroupGroupsPostJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateGroupGroupsPostResponse, error)
 
 	// GetGroupInfosGroupsGroupIdGetWithResponse request
 	GetGroupInfosGroupsGroupIdGetWithResponse(ctx context.Context, groupId int, reqEditors ...RequestEditorFn) (*GetGroupInfosGroupsGroupIdGetResponse, error)
@@ -1503,8 +1524,10 @@ type ClientWithResponsesInterface interface {
 	// GetGroupRecommendationsGroupsGroupIdRecommendationsGetWithResponse request
 	GetGroupRecommendationsGroupsGroupIdRecommendationsGetWithResponse(ctx context.Context, groupId int, reqEditors ...RequestEditorFn) (*GetGroupRecommendationsGroupsGroupIdRecommendationsGetResponse, error)
 
-	// AddGroupRecommendationsGroupsGroupIdRecommendationsPostWithResponse request
-	AddGroupRecommendationsGroupsGroupIdRecommendationsPostWithResponse(ctx context.Context, groupId int, params *AddGroupRecommendationsGroupsGroupIdRecommendationsPostParams, reqEditors ...RequestEditorFn) (*AddGroupRecommendationsGroupsGroupIdRecommendationsPostResponse, error)
+	// AddGroupRecommendationsGroupsGroupIdRecommendationsPostWithBodyWithResponse request with any body
+	AddGroupRecommendationsGroupsGroupIdRecommendationsPostWithBodyWithResponse(ctx context.Context, groupId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddGroupRecommendationsGroupsGroupIdRecommendationsPostResponse, error)
+
+	AddGroupRecommendationsGroupsGroupIdRecommendationsPostWithResponse(ctx context.Context, groupId int, body AddGroupRecommendationsGroupsGroupIdRecommendationsPostJSONRequestBody, reqEditors ...RequestEditorFn) (*AddGroupRecommendationsGroupsGroupIdRecommendationsPostResponse, error)
 
 	// GetGroupTastesGroupsGroupIdTastesGetWithResponse request
 	GetGroupTastesGroupsGroupIdTastesGetWithResponse(ctx context.Context, groupId int, reqEditors ...RequestEditorFn) (*GetGroupTastesGroupsGroupIdTastesGetResponse, error)
@@ -1512,8 +1535,8 @@ type ClientWithResponsesInterface interface {
 	// RemoveTasteFromGroupGroupsGroupIdTastesGenreIdDeleteWithResponse request
 	RemoveTasteFromGroupGroupsGroupIdTastesGenreIdDeleteWithResponse(ctx context.Context, groupId int, genreId int, reqEditors ...RequestEditorFn) (*RemoveTasteFromGroupGroupsGroupIdTastesGenreIdDeleteResponse, error)
 
-	// AddTasteForGroupGroupsGroupIdTastesGenreIdPostWithResponse request
-	AddTasteForGroupGroupsGroupIdTastesGenreIdPostWithResponse(ctx context.Context, groupId int, genreId int, reqEditors ...RequestEditorFn) (*AddTasteForGroupGroupsGroupIdTastesGenreIdPostResponse, error)
+	// AddTasteForGroupGroupsGroupIdTastesGenreIdPutWithResponse request
+	AddTasteForGroupGroupsGroupIdTastesGenreIdPutWithResponse(ctx context.Context, groupId int, genreId int, reqEditors ...RequestEditorFn) (*AddTasteForGroupGroupsGroupIdTastesGenreIdPutResponse, error)
 
 	// GetGroupUsersGroupsGroupIdUsersGetWithResponse request
 	GetGroupUsersGroupsGroupIdUsersGetWithResponse(ctx context.Context, groupId int, reqEditors ...RequestEditorFn) (*GetGroupUsersGroupsGroupIdUsersGetResponse, error)
@@ -1521,14 +1544,16 @@ type ClientWithResponsesInterface interface {
 	// RemoveUserFromGroupGroupsGroupIdUsersUserIdDeleteWithResponse request
 	RemoveUserFromGroupGroupsGroupIdUsersUserIdDeleteWithResponse(ctx context.Context, groupId int, userId int, reqEditors ...RequestEditorFn) (*RemoveUserFromGroupGroupsGroupIdUsersUserIdDeleteResponse, error)
 
-	// AddUserToGroupGroupsGroupIdUsersUserIdPostWithResponse request
-	AddUserToGroupGroupsGroupIdUsersUserIdPostWithResponse(ctx context.Context, groupId int, userId int, reqEditors ...RequestEditorFn) (*AddUserToGroupGroupsGroupIdUsersUserIdPostResponse, error)
+	// AddUserToGroupGroupsGroupIdUsersUserIdPutWithResponse request
+	AddUserToGroupGroupsGroupIdUsersUserIdPutWithResponse(ctx context.Context, groupId int, userId int, reqEditors ...RequestEditorFn) (*AddUserToGroupGroupsGroupIdUsersUserIdPutResponse, error)
 
 	// GetUserGroupsUserUserIdGroupsGetWithResponse request
 	GetUserGroupsUserUserIdGroupsGetWithResponse(ctx context.Context, userId int, reqEditors ...RequestEditorFn) (*GetUserGroupsUserUserIdGroupsGetResponse, error)
 
-	// CreateUserUsersPostWithResponse request
-	CreateUserUsersPostWithResponse(ctx context.Context, params *CreateUserUsersPostParams, reqEditors ...RequestEditorFn) (*CreateUserUsersPostResponse, error)
+	// CreateUserUsersPostWithBodyWithResponse request with any body
+	CreateUserUsersPostWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateUserUsersPostResponse, error)
+
+	CreateUserUsersPostWithResponse(ctx context.Context, body CreateUserUsersPostJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateUserUsersPostResponse, error)
 
 	// GetUserInfosByMailUsersEmailBymailGetWithResponse request
 	GetUserInfosByMailUsersEmailBymailGetWithResponse(ctx context.Context, email string, reqEditors ...RequestEditorFn) (*GetUserInfosByMailUsersEmailBymailGetResponse, error)
@@ -1539,8 +1564,10 @@ type ClientWithResponsesInterface interface {
 	// GetUserInfosUsersUserIdGetWithResponse request
 	GetUserInfosUsersUserIdGetWithResponse(ctx context.Context, userId int, reqEditors ...RequestEditorFn) (*GetUserInfosUsersUserIdGetResponse, error)
 
-	// AddUserInfosUsersUserIdPostWithResponse request
-	AddUserInfosUsersUserIdPostWithResponse(ctx context.Context, userId int, params *AddUserInfosUsersUserIdPostParams, reqEditors ...RequestEditorFn) (*AddUserInfosUsersUserIdPostResponse, error)
+	// AddUserInfosUsersUserIdPostWithBodyWithResponse request with any body
+	AddUserInfosUsersUserIdPostWithBodyWithResponse(ctx context.Context, userId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddUserInfosUsersUserIdPostResponse, error)
+
+	AddUserInfosUsersUserIdPostWithResponse(ctx context.Context, userId int, body AddUserInfosUsersUserIdPostJSONRequestBody, reqEditors ...RequestEditorFn) (*AddUserInfosUsersUserIdPostResponse, error)
 
 	// GetSeenMoviesUsersUserIdMoviesGetWithResponse request
 	GetSeenMoviesUsersUserIdMoviesGetWithResponse(ctx context.Context, userId int, reqEditors ...RequestEditorFn) (*GetSeenMoviesUsersUserIdMoviesGetResponse, error)
@@ -1548,14 +1575,18 @@ type ClientWithResponsesInterface interface {
 	// RemoveMovieFromWatchedUsersUserIdMoviesMovieIdDeleteWithResponse request
 	RemoveMovieFromWatchedUsersUserIdMoviesMovieIdDeleteWithResponse(ctx context.Context, userId int, movieId int, reqEditors ...RequestEditorFn) (*RemoveMovieFromWatchedUsersUserIdMoviesMovieIdDeleteResponse, error)
 
-	// AddMovieToWatchedUsersUserIdMoviesMovieIdPostWithResponse request
-	AddMovieToWatchedUsersUserIdMoviesMovieIdPostWithResponse(ctx context.Context, userId int, movieId int, params *AddMovieToWatchedUsersUserIdMoviesMovieIdPostParams, reqEditors ...RequestEditorFn) (*AddMovieToWatchedUsersUserIdMoviesMovieIdPostResponse, error)
+	// AddMovieToWatchedUsersUserIdMoviesMovieIdPostWithBodyWithResponse request with any body
+	AddMovieToWatchedUsersUserIdMoviesMovieIdPostWithBodyWithResponse(ctx context.Context, userId int, movieId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddMovieToWatchedUsersUserIdMoviesMovieIdPostResponse, error)
+
+	AddMovieToWatchedUsersUserIdMoviesMovieIdPostWithResponse(ctx context.Context, userId int, movieId int, body AddMovieToWatchedUsersUserIdMoviesMovieIdPostJSONRequestBody, reqEditors ...RequestEditorFn) (*AddMovieToWatchedUsersUserIdMoviesMovieIdPostResponse, error)
 
 	// GetRecommendationsUsersUserIdRecommendationsGetWithResponse request
 	GetRecommendationsUsersUserIdRecommendationsGetWithResponse(ctx context.Context, userId int, reqEditors ...RequestEditorFn) (*GetRecommendationsUsersUserIdRecommendationsGetResponse, error)
 
-	// AddRecommendationsUsersUserIdRecommendationsPostWithResponse request
-	AddRecommendationsUsersUserIdRecommendationsPostWithResponse(ctx context.Context, userId int, params *AddRecommendationsUsersUserIdRecommendationsPostParams, reqEditors ...RequestEditorFn) (*AddRecommendationsUsersUserIdRecommendationsPostResponse, error)
+	// AddRecommendationsUsersUserIdRecommendationsPostWithBodyWithResponse request with any body
+	AddRecommendationsUsersUserIdRecommendationsPostWithBodyWithResponse(ctx context.Context, userId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddRecommendationsUsersUserIdRecommendationsPostResponse, error)
+
+	AddRecommendationsUsersUserIdRecommendationsPostWithResponse(ctx context.Context, userId int, body AddRecommendationsUsersUserIdRecommendationsPostJSONRequestBody, reqEditors ...RequestEditorFn) (*AddRecommendationsUsersUserIdRecommendationsPostResponse, error)
 
 	// GetTastesUsersUserIdTastesGetWithResponse request
 	GetTastesUsersUserIdTastesGetWithResponse(ctx context.Context, userId int, reqEditors ...RequestEditorFn) (*GetTastesUsersUserIdTastesGetResponse, error)
@@ -1563,8 +1594,8 @@ type ClientWithResponsesInterface interface {
 	// RemoveTasteFromUserUsersUserIdTastesGenreIdDeleteWithResponse request
 	RemoveTasteFromUserUsersUserIdTastesGenreIdDeleteWithResponse(ctx context.Context, userId int, genreId int, reqEditors ...RequestEditorFn) (*RemoveTasteFromUserUsersUserIdTastesGenreIdDeleteResponse, error)
 
-	// AddTasteForUserUsersUserIdTastesGenreIdPostWithResponse request
-	AddTasteForUserUsersUserIdTastesGenreIdPostWithResponse(ctx context.Context, userId int, genreId int, reqEditors ...RequestEditorFn) (*AddTasteForUserUsersUserIdTastesGenreIdPostResponse, error)
+	// AddTasteForUserUsersUserIdTastesGenreIdPutWithResponse request
+	AddTasteForUserUsersUserIdTastesGenreIdPutWithResponse(ctx context.Context, userId int, genreId int, reqEditors ...RequestEditorFn) (*AddTasteForUserUsersUserIdTastesGenreIdPutResponse, error)
 }
 
 type CreateGroupGroupsPostResponse struct {
@@ -1705,7 +1736,7 @@ func (r RemoveTasteFromGroupGroupsGroupIdTastesGenreIdDeleteResponse) StatusCode
 	return 0
 }
 
-type AddTasteForGroupGroupsGroupIdTastesGenreIdPostResponse struct {
+type AddTasteForGroupGroupsGroupIdTastesGenreIdPutResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ApiResponse
@@ -1713,7 +1744,7 @@ type AddTasteForGroupGroupsGroupIdTastesGenreIdPostResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r AddTasteForGroupGroupsGroupIdTastesGenreIdPostResponse) Status() string {
+func (r AddTasteForGroupGroupsGroupIdTastesGenreIdPutResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1721,7 +1752,7 @@ func (r AddTasteForGroupGroupsGroupIdTastesGenreIdPostResponse) Status() string 
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r AddTasteForGroupGroupsGroupIdTastesGenreIdPostResponse) StatusCode() int {
+func (r AddTasteForGroupGroupsGroupIdTastesGenreIdPutResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -1774,7 +1805,7 @@ func (r RemoveUserFromGroupGroupsGroupIdUsersUserIdDeleteResponse) StatusCode() 
 	return 0
 }
 
-type AddUserToGroupGroupsGroupIdUsersUserIdPostResponse struct {
+type AddUserToGroupGroupsGroupIdUsersUserIdPutResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ApiResponse
@@ -1782,7 +1813,7 @@ type AddUserToGroupGroupsGroupIdUsersUserIdPostResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r AddUserToGroupGroupsGroupIdUsersUserIdPostResponse) Status() string {
+func (r AddUserToGroupGroupsGroupIdUsersUserIdPutResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1790,7 +1821,7 @@ func (r AddUserToGroupGroupsGroupIdUsersUserIdPostResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r AddUserToGroupGroupsGroupIdUsersUserIdPostResponse) StatusCode() int {
+func (r AddUserToGroupGroupsGroupIdUsersUserIdPutResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -2096,7 +2127,7 @@ func (r RemoveTasteFromUserUsersUserIdTastesGenreIdDeleteResponse) StatusCode() 
 	return 0
 }
 
-type AddTasteForUserUsersUserIdTastesGenreIdPostResponse struct {
+type AddTasteForUserUsersUserIdTastesGenreIdPutResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ApiResponse
@@ -2104,7 +2135,7 @@ type AddTasteForUserUsersUserIdTastesGenreIdPostResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r AddTasteForUserUsersUserIdTastesGenreIdPostResponse) Status() string {
+func (r AddTasteForUserUsersUserIdTastesGenreIdPutResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -2112,16 +2143,24 @@ func (r AddTasteForUserUsersUserIdTastesGenreIdPostResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r AddTasteForUserUsersUserIdTastesGenreIdPostResponse) StatusCode() int {
+func (r AddTasteForUserUsersUserIdTastesGenreIdPutResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-// CreateGroupGroupsPostWithResponse request returning *CreateGroupGroupsPostResponse
-func (c *ClientWithResponses) CreateGroupGroupsPostWithResponse(ctx context.Context, params *CreateGroupGroupsPostParams, reqEditors ...RequestEditorFn) (*CreateGroupGroupsPostResponse, error) {
-	rsp, err := c.CreateGroupGroupsPost(ctx, params, reqEditors...)
+// CreateGroupGroupsPostWithBodyWithResponse request with arbitrary body returning *CreateGroupGroupsPostResponse
+func (c *ClientWithResponses) CreateGroupGroupsPostWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateGroupGroupsPostResponse, error) {
+	rsp, err := c.CreateGroupGroupsPostWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateGroupGroupsPostResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateGroupGroupsPostWithResponse(ctx context.Context, body CreateGroupGroupsPostJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateGroupGroupsPostResponse, error) {
+	rsp, err := c.CreateGroupGroupsPost(ctx, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -2146,9 +2185,17 @@ func (c *ClientWithResponses) GetGroupRecommendationsGroupsGroupIdRecommendation
 	return ParseGetGroupRecommendationsGroupsGroupIdRecommendationsGetResponse(rsp)
 }
 
-// AddGroupRecommendationsGroupsGroupIdRecommendationsPostWithResponse request returning *AddGroupRecommendationsGroupsGroupIdRecommendationsPostResponse
-func (c *ClientWithResponses) AddGroupRecommendationsGroupsGroupIdRecommendationsPostWithResponse(ctx context.Context, groupId int, params *AddGroupRecommendationsGroupsGroupIdRecommendationsPostParams, reqEditors ...RequestEditorFn) (*AddGroupRecommendationsGroupsGroupIdRecommendationsPostResponse, error) {
-	rsp, err := c.AddGroupRecommendationsGroupsGroupIdRecommendationsPost(ctx, groupId, params, reqEditors...)
+// AddGroupRecommendationsGroupsGroupIdRecommendationsPostWithBodyWithResponse request with arbitrary body returning *AddGroupRecommendationsGroupsGroupIdRecommendationsPostResponse
+func (c *ClientWithResponses) AddGroupRecommendationsGroupsGroupIdRecommendationsPostWithBodyWithResponse(ctx context.Context, groupId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddGroupRecommendationsGroupsGroupIdRecommendationsPostResponse, error) {
+	rsp, err := c.AddGroupRecommendationsGroupsGroupIdRecommendationsPostWithBody(ctx, groupId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAddGroupRecommendationsGroupsGroupIdRecommendationsPostResponse(rsp)
+}
+
+func (c *ClientWithResponses) AddGroupRecommendationsGroupsGroupIdRecommendationsPostWithResponse(ctx context.Context, groupId int, body AddGroupRecommendationsGroupsGroupIdRecommendationsPostJSONRequestBody, reqEditors ...RequestEditorFn) (*AddGroupRecommendationsGroupsGroupIdRecommendationsPostResponse, error) {
+	rsp, err := c.AddGroupRecommendationsGroupsGroupIdRecommendationsPost(ctx, groupId, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -2173,13 +2220,13 @@ func (c *ClientWithResponses) RemoveTasteFromGroupGroupsGroupIdTastesGenreIdDele
 	return ParseRemoveTasteFromGroupGroupsGroupIdTastesGenreIdDeleteResponse(rsp)
 }
 
-// AddTasteForGroupGroupsGroupIdTastesGenreIdPostWithResponse request returning *AddTasteForGroupGroupsGroupIdTastesGenreIdPostResponse
-func (c *ClientWithResponses) AddTasteForGroupGroupsGroupIdTastesGenreIdPostWithResponse(ctx context.Context, groupId int, genreId int, reqEditors ...RequestEditorFn) (*AddTasteForGroupGroupsGroupIdTastesGenreIdPostResponse, error) {
-	rsp, err := c.AddTasteForGroupGroupsGroupIdTastesGenreIdPost(ctx, groupId, genreId, reqEditors...)
+// AddTasteForGroupGroupsGroupIdTastesGenreIdPutWithResponse request returning *AddTasteForGroupGroupsGroupIdTastesGenreIdPutResponse
+func (c *ClientWithResponses) AddTasteForGroupGroupsGroupIdTastesGenreIdPutWithResponse(ctx context.Context, groupId int, genreId int, reqEditors ...RequestEditorFn) (*AddTasteForGroupGroupsGroupIdTastesGenreIdPutResponse, error) {
+	rsp, err := c.AddTasteForGroupGroupsGroupIdTastesGenreIdPut(ctx, groupId, genreId, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseAddTasteForGroupGroupsGroupIdTastesGenreIdPostResponse(rsp)
+	return ParseAddTasteForGroupGroupsGroupIdTastesGenreIdPutResponse(rsp)
 }
 
 // GetGroupUsersGroupsGroupIdUsersGetWithResponse request returning *GetGroupUsersGroupsGroupIdUsersGetResponse
@@ -2200,13 +2247,13 @@ func (c *ClientWithResponses) RemoveUserFromGroupGroupsGroupIdUsersUserIdDeleteW
 	return ParseRemoveUserFromGroupGroupsGroupIdUsersUserIdDeleteResponse(rsp)
 }
 
-// AddUserToGroupGroupsGroupIdUsersUserIdPostWithResponse request returning *AddUserToGroupGroupsGroupIdUsersUserIdPostResponse
-func (c *ClientWithResponses) AddUserToGroupGroupsGroupIdUsersUserIdPostWithResponse(ctx context.Context, groupId int, userId int, reqEditors ...RequestEditorFn) (*AddUserToGroupGroupsGroupIdUsersUserIdPostResponse, error) {
-	rsp, err := c.AddUserToGroupGroupsGroupIdUsersUserIdPost(ctx, groupId, userId, reqEditors...)
+// AddUserToGroupGroupsGroupIdUsersUserIdPutWithResponse request returning *AddUserToGroupGroupsGroupIdUsersUserIdPutResponse
+func (c *ClientWithResponses) AddUserToGroupGroupsGroupIdUsersUserIdPutWithResponse(ctx context.Context, groupId int, userId int, reqEditors ...RequestEditorFn) (*AddUserToGroupGroupsGroupIdUsersUserIdPutResponse, error) {
+	rsp, err := c.AddUserToGroupGroupsGroupIdUsersUserIdPut(ctx, groupId, userId, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseAddUserToGroupGroupsGroupIdUsersUserIdPostResponse(rsp)
+	return ParseAddUserToGroupGroupsGroupIdUsersUserIdPutResponse(rsp)
 }
 
 // GetUserGroupsUserUserIdGroupsGetWithResponse request returning *GetUserGroupsUserUserIdGroupsGetResponse
@@ -2218,9 +2265,17 @@ func (c *ClientWithResponses) GetUserGroupsUserUserIdGroupsGetWithResponse(ctx c
 	return ParseGetUserGroupsUserUserIdGroupsGetResponse(rsp)
 }
 
-// CreateUserUsersPostWithResponse request returning *CreateUserUsersPostResponse
-func (c *ClientWithResponses) CreateUserUsersPostWithResponse(ctx context.Context, params *CreateUserUsersPostParams, reqEditors ...RequestEditorFn) (*CreateUserUsersPostResponse, error) {
-	rsp, err := c.CreateUserUsersPost(ctx, params, reqEditors...)
+// CreateUserUsersPostWithBodyWithResponse request with arbitrary body returning *CreateUserUsersPostResponse
+func (c *ClientWithResponses) CreateUserUsersPostWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateUserUsersPostResponse, error) {
+	rsp, err := c.CreateUserUsersPostWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateUserUsersPostResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateUserUsersPostWithResponse(ctx context.Context, body CreateUserUsersPostJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateUserUsersPostResponse, error) {
+	rsp, err := c.CreateUserUsersPost(ctx, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -2254,9 +2309,17 @@ func (c *ClientWithResponses) GetUserInfosUsersUserIdGetWithResponse(ctx context
 	return ParseGetUserInfosUsersUserIdGetResponse(rsp)
 }
 
-// AddUserInfosUsersUserIdPostWithResponse request returning *AddUserInfosUsersUserIdPostResponse
-func (c *ClientWithResponses) AddUserInfosUsersUserIdPostWithResponse(ctx context.Context, userId int, params *AddUserInfosUsersUserIdPostParams, reqEditors ...RequestEditorFn) (*AddUserInfosUsersUserIdPostResponse, error) {
-	rsp, err := c.AddUserInfosUsersUserIdPost(ctx, userId, params, reqEditors...)
+// AddUserInfosUsersUserIdPostWithBodyWithResponse request with arbitrary body returning *AddUserInfosUsersUserIdPostResponse
+func (c *ClientWithResponses) AddUserInfosUsersUserIdPostWithBodyWithResponse(ctx context.Context, userId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddUserInfosUsersUserIdPostResponse, error) {
+	rsp, err := c.AddUserInfosUsersUserIdPostWithBody(ctx, userId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAddUserInfosUsersUserIdPostResponse(rsp)
+}
+
+func (c *ClientWithResponses) AddUserInfosUsersUserIdPostWithResponse(ctx context.Context, userId int, body AddUserInfosUsersUserIdPostJSONRequestBody, reqEditors ...RequestEditorFn) (*AddUserInfosUsersUserIdPostResponse, error) {
+	rsp, err := c.AddUserInfosUsersUserIdPost(ctx, userId, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -2281,9 +2344,17 @@ func (c *ClientWithResponses) RemoveMovieFromWatchedUsersUserIdMoviesMovieIdDele
 	return ParseRemoveMovieFromWatchedUsersUserIdMoviesMovieIdDeleteResponse(rsp)
 }
 
-// AddMovieToWatchedUsersUserIdMoviesMovieIdPostWithResponse request returning *AddMovieToWatchedUsersUserIdMoviesMovieIdPostResponse
-func (c *ClientWithResponses) AddMovieToWatchedUsersUserIdMoviesMovieIdPostWithResponse(ctx context.Context, userId int, movieId int, params *AddMovieToWatchedUsersUserIdMoviesMovieIdPostParams, reqEditors ...RequestEditorFn) (*AddMovieToWatchedUsersUserIdMoviesMovieIdPostResponse, error) {
-	rsp, err := c.AddMovieToWatchedUsersUserIdMoviesMovieIdPost(ctx, userId, movieId, params, reqEditors...)
+// AddMovieToWatchedUsersUserIdMoviesMovieIdPostWithBodyWithResponse request with arbitrary body returning *AddMovieToWatchedUsersUserIdMoviesMovieIdPostResponse
+func (c *ClientWithResponses) AddMovieToWatchedUsersUserIdMoviesMovieIdPostWithBodyWithResponse(ctx context.Context, userId int, movieId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddMovieToWatchedUsersUserIdMoviesMovieIdPostResponse, error) {
+	rsp, err := c.AddMovieToWatchedUsersUserIdMoviesMovieIdPostWithBody(ctx, userId, movieId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAddMovieToWatchedUsersUserIdMoviesMovieIdPostResponse(rsp)
+}
+
+func (c *ClientWithResponses) AddMovieToWatchedUsersUserIdMoviesMovieIdPostWithResponse(ctx context.Context, userId int, movieId int, body AddMovieToWatchedUsersUserIdMoviesMovieIdPostJSONRequestBody, reqEditors ...RequestEditorFn) (*AddMovieToWatchedUsersUserIdMoviesMovieIdPostResponse, error) {
+	rsp, err := c.AddMovieToWatchedUsersUserIdMoviesMovieIdPost(ctx, userId, movieId, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -2299,9 +2370,17 @@ func (c *ClientWithResponses) GetRecommendationsUsersUserIdRecommendationsGetWit
 	return ParseGetRecommendationsUsersUserIdRecommendationsGetResponse(rsp)
 }
 
-// AddRecommendationsUsersUserIdRecommendationsPostWithResponse request returning *AddRecommendationsUsersUserIdRecommendationsPostResponse
-func (c *ClientWithResponses) AddRecommendationsUsersUserIdRecommendationsPostWithResponse(ctx context.Context, userId int, params *AddRecommendationsUsersUserIdRecommendationsPostParams, reqEditors ...RequestEditorFn) (*AddRecommendationsUsersUserIdRecommendationsPostResponse, error) {
-	rsp, err := c.AddRecommendationsUsersUserIdRecommendationsPost(ctx, userId, params, reqEditors...)
+// AddRecommendationsUsersUserIdRecommendationsPostWithBodyWithResponse request with arbitrary body returning *AddRecommendationsUsersUserIdRecommendationsPostResponse
+func (c *ClientWithResponses) AddRecommendationsUsersUserIdRecommendationsPostWithBodyWithResponse(ctx context.Context, userId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddRecommendationsUsersUserIdRecommendationsPostResponse, error) {
+	rsp, err := c.AddRecommendationsUsersUserIdRecommendationsPostWithBody(ctx, userId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAddRecommendationsUsersUserIdRecommendationsPostResponse(rsp)
+}
+
+func (c *ClientWithResponses) AddRecommendationsUsersUserIdRecommendationsPostWithResponse(ctx context.Context, userId int, body AddRecommendationsUsersUserIdRecommendationsPostJSONRequestBody, reqEditors ...RequestEditorFn) (*AddRecommendationsUsersUserIdRecommendationsPostResponse, error) {
+	rsp, err := c.AddRecommendationsUsersUserIdRecommendationsPost(ctx, userId, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -2326,13 +2405,13 @@ func (c *ClientWithResponses) RemoveTasteFromUserUsersUserIdTastesGenreIdDeleteW
 	return ParseRemoveTasteFromUserUsersUserIdTastesGenreIdDeleteResponse(rsp)
 }
 
-// AddTasteForUserUsersUserIdTastesGenreIdPostWithResponse request returning *AddTasteForUserUsersUserIdTastesGenreIdPostResponse
-func (c *ClientWithResponses) AddTasteForUserUsersUserIdTastesGenreIdPostWithResponse(ctx context.Context, userId int, genreId int, reqEditors ...RequestEditorFn) (*AddTasteForUserUsersUserIdTastesGenreIdPostResponse, error) {
-	rsp, err := c.AddTasteForUserUsersUserIdTastesGenreIdPost(ctx, userId, genreId, reqEditors...)
+// AddTasteForUserUsersUserIdTastesGenreIdPutWithResponse request returning *AddTasteForUserUsersUserIdTastesGenreIdPutResponse
+func (c *ClientWithResponses) AddTasteForUserUsersUserIdTastesGenreIdPutWithResponse(ctx context.Context, userId int, genreId int, reqEditors ...RequestEditorFn) (*AddTasteForUserUsersUserIdTastesGenreIdPutResponse, error) {
+	rsp, err := c.AddTasteForUserUsersUserIdTastesGenreIdPut(ctx, userId, genreId, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseAddTasteForUserUsersUserIdTastesGenreIdPostResponse(rsp)
+	return ParseAddTasteForUserUsersUserIdTastesGenreIdPutResponse(rsp)
 }
 
 // ParseCreateGroupGroupsPostResponse parses an HTTP response from a CreateGroupGroupsPostWithResponse call
@@ -2533,15 +2612,15 @@ func ParseRemoveTasteFromGroupGroupsGroupIdTastesGenreIdDeleteResponse(rsp *http
 	return response, nil
 }
 
-// ParseAddTasteForGroupGroupsGroupIdTastesGenreIdPostResponse parses an HTTP response from a AddTasteForGroupGroupsGroupIdTastesGenreIdPostWithResponse call
-func ParseAddTasteForGroupGroupsGroupIdTastesGenreIdPostResponse(rsp *http.Response) (*AddTasteForGroupGroupsGroupIdTastesGenreIdPostResponse, error) {
+// ParseAddTasteForGroupGroupsGroupIdTastesGenreIdPutResponse parses an HTTP response from a AddTasteForGroupGroupsGroupIdTastesGenreIdPutWithResponse call
+func ParseAddTasteForGroupGroupsGroupIdTastesGenreIdPutResponse(rsp *http.Response) (*AddTasteForGroupGroupsGroupIdTastesGenreIdPutResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &AddTasteForGroupGroupsGroupIdTastesGenreIdPostResponse{
+	response := &AddTasteForGroupGroupsGroupIdTastesGenreIdPutResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -2632,15 +2711,15 @@ func ParseRemoveUserFromGroupGroupsGroupIdUsersUserIdDeleteResponse(rsp *http.Re
 	return response, nil
 }
 
-// ParseAddUserToGroupGroupsGroupIdUsersUserIdPostResponse parses an HTTP response from a AddUserToGroupGroupsGroupIdUsersUserIdPostWithResponse call
-func ParseAddUserToGroupGroupsGroupIdUsersUserIdPostResponse(rsp *http.Response) (*AddUserToGroupGroupsGroupIdUsersUserIdPostResponse, error) {
+// ParseAddUserToGroupGroupsGroupIdUsersUserIdPutResponse parses an HTTP response from a AddUserToGroupGroupsGroupIdUsersUserIdPutWithResponse call
+func ParseAddUserToGroupGroupsGroupIdUsersUserIdPutResponse(rsp *http.Response) (*AddUserToGroupGroupsGroupIdUsersUserIdPutResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &AddUserToGroupGroupsGroupIdUsersUserIdPostResponse{
+	response := &AddUserToGroupGroupsGroupIdUsersUserIdPutResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -3094,15 +3173,15 @@ func ParseRemoveTasteFromUserUsersUserIdTastesGenreIdDeleteResponse(rsp *http.Re
 	return response, nil
 }
 
-// ParseAddTasteForUserUsersUserIdTastesGenreIdPostResponse parses an HTTP response from a AddTasteForUserUsersUserIdTastesGenreIdPostWithResponse call
-func ParseAddTasteForUserUsersUserIdTastesGenreIdPostResponse(rsp *http.Response) (*AddTasteForUserUsersUserIdTastesGenreIdPostResponse, error) {
+// ParseAddTasteForUserUsersUserIdTastesGenreIdPutResponse parses an HTTP response from a AddTasteForUserUsersUserIdTastesGenreIdPutWithResponse call
+func ParseAddTasteForUserUsersUserIdTastesGenreIdPutResponse(rsp *http.Response) (*AddTasteForUserUsersUserIdTastesGenreIdPutResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &AddTasteForUserUsersUserIdTastesGenreIdPostResponse{
+	response := &AddTasteForUserUsersUserIdTastesGenreIdPutResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}

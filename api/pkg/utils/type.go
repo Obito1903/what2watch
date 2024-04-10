@@ -5,7 +5,6 @@ type Recommendation struct {
 	Accuracy float64 `json:"accuracy"`
 }
 
-type Group struct {
+type GroupRequest struct {
 	GroupName string `json:"name"`
-	UserID    int    `json:"group_id"`
 }

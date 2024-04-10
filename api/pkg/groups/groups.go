@@ -1,7 +1,6 @@
 package groups
 
 import (
-	"db/pkg/dbapi"
 	"db/pkg/utils"
 
 	"github.com/gofiber/fiber/v3"
@@ -11,38 +10,47 @@ func RegisterGroupsRoute(app *fiber.App) {
 	groups := app.Group("/groups")
 	groups.Get("/", GetGroups)
 	groups.Post("/", PostGroup)
-	groups.Get("/:id", GetGroup)
+
+	groups.Get("/:group_id", GetGroup)
+
+	groups.Get("/:group_id/recommendations", GetGroupRecommendations)
+
+	groups.Get("/:group_id/users", GetGroupUsers)
+	groups.Put("/:group_id/users/:user_id", PutGroupUsers)
+	groups.Delete("/:group_id/users/:user_id", DeleteGroupMovies)
+
+	groups.Get("/:group_id/tastes", GetGroupTastes)
+
 }
 
 func GetGroups(c fiber.Ctx) error {
-	userID, err := utils.CheckAuth(c)
-	if err != nil {
-		return c.Status(401).JSON(utils.ApiError{Message: "Unauthorized"})
-	}
-	groups, err := utils.AppConfig.DBClient.GetUserGroupsUserUserIdGroupsGet(c.Context(), userID)
-	if err != nil {
-		return c.Status(500).JSON(utils.ApiError{Message: "Error getting groups"})
-	}
-	return c.JSON(groups)
-}
-
-func GetGroup(c fiber.Ctx) error {
-	return nil
+	return utils.AuthProxyWrapper(c, utils.AppConfig.DBApiURL+"/groups")
 }
 
 func PostGroup(c fiber.Ctx) error {
-	userID, err := utils.CheckAuth(c)
-	if err != nil {
-		return c.Status(401).JSON(utils.ApiError{Message: "Unauthorized"})
-	}
-	group := dbapi.CreateGroupGroupsPostParams{
-		GpName: c.FormValue("name"),
-	}
-	body := c.Body()
-	group.UserID = userID
-	groupResp, err := utils.AppConfig.DBClient.CreateGroupGroupsPostWithResponse(c.Context())
-	if err != nil {
-		return c.Status(500).JSON(utils.ApiError{Message: "Error creating group"})
-	}
-	return c.JSON(groupResp)
+	return utils.AuthProxyWrapper(c, utils.AppConfig.DBApiURL+"/groups")
+}
+
+func GetGroup(c fiber.Ctx) error {
+	return utils.AuthProxyWrapper(c, utils.AppConfig.DBApiURL+"/groups/"+c.Params("group_id"))
+}
+
+func GetGroupRecommendations(c fiber.Ctx) error {
+	return utils.AuthProxyWrapper(c, utils.AppConfig.DBApiURL+"/groups/"+c.Params("group_id")+"/recommendations")
+}
+
+func GetGroupUsers(c fiber.Ctx) error {
+	return utils.AuthProxyWrapper(c, utils.AppConfig.DBApiURL+"/groups/"+c.Params("group_id")+"/users")
+}
+
+func PutGroupUsers(c fiber.Ctx) error {
+	return utils.AuthProxyWrapper(c, utils.AppConfig.DBApiURL+"/groups/"+c.Params("group_id")+"/users/"+c.Params("user_id"))
+}
+
+func DeleteGroupMovies(c fiber.Ctx) error {
+	return utils.AuthProxyWrapper(c, utils.AppConfig.DBApiURL+"/groups/"+c.Params("group_id")+"/users/"+c.Params("user_id"))
+}
+
+func GetGroupTastes(c fiber.Ctx) error {
+	return utils.AuthProxyWrapper(c, utils.AppConfig.DBApiURL+"/groups/"+c.Params("group_id")+"/tastes")
 }
