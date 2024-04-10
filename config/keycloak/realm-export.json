@@ -698,9 +698,9 @@
       "clientAuthenticatorType": "client-secret",
       "secret": "IeTnynMXDBFfUNvKTiOTUzXblrjEk7Sd",
       "redirectUris": [
-        "http://localhost:3000/callback",
-        "http://localhost:5173/callback",
-        "http://what2watch.localhost/callback"
+        "http://localhost:3000/auth/callback/keycloak",
+        "http://localhost:5173/auth/callback/keycloak",
+        "http://what2watch.localhost/auth/callback/keycloak"
       ],
       "webOrigins": [
         "/*"
