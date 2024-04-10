@@ -65,9 +65,9 @@ def get_seen_movies(user_id: int) -> List[str]:
     return res
 
 @app.post("/users/{user_id}/movies/{movie_id}", status_code=200, tags=["Movies of Users"])
-def add_movie_to_watched(user_id: int, movie_id: int, rating: int) -> ApiResponse:
+def add_movie_to_watched(user_id: int, movie_id: int, rating: UserPostMovieRequest) -> ApiResponse:
     sql = "INSERT INTO review (rating, user_id, genre_id) VALUES (%s, %s, %s)"
-    values = (rating, user_id, genre_id)
+    values = (rating.rating, user_id, movie_id)
 
     c.execute(sql, values)
 
@@ -97,9 +97,9 @@ def get_recommendations(user_id: int) -> List[MovieReccomendationResponse]:
     return res
 
 @app.post("/users/{user_id}/recommendations", status_code=200, tags=["Recommendations"])
-def add_recommendations(user_id: int, movie_id: int, accuracy: float) -> ApiResponse:
+def add_recommendations(user_id: int, rec: UserPostRecommendationRequest) -> ApiResponse:
     sql = "INSERT INTO movie_user_recommendation (accuracy, user_id, movie_id) VALUES (%s, %s, %s, %s)"
-    values = (accuracy, user_id, movie_id)
+    values = (rec.accuracy, user_id, rec.movie_id)
 
     c.execute(sql, values)
 
@@ -120,7 +120,7 @@ def get_tastes(user_id: int) -> List[GenreResponse]:
         raise HTTPException(status_code=404, detail="Item not found")
     return res
 
-@app.post("/users/{user_id}/tastes/{genre_id}", status_code=200, tags=["Tastes of Users"])
+@app.put("/users/{user_id}/tastes/{genre_id}", status_code=200, tags=["Tastes of Users"])
 def add_taste_for_user(user_id: int, genre_id: int) -> ApiResponse:
     sql = "INSERT INTO user_genre_preferences (user_id, genre_id) VALUES (%s, %s)"
     values = (user_id, genre_id)
@@ -161,9 +161,9 @@ def get_user_infos(user_id: int) -> UserResponse:
     return res
 
 @app.post("/users/{user_id}", status_code=200, tags=["Users"])
-def add_user_infos(user_id: int, name: str) -> ApiResponse:
+def add_user_infos(user_id: int, req: UserPostUpdateRequest) -> ApiResponse:
     sql = "UPDATE user SET name = %s WHERE user_id LIKE %s"
-    values = (name, user_id)
+    values = (req.name, user_id)
     c.execute(sql, values)
 
     db.commit()
@@ -179,9 +179,9 @@ def remove_user(user_id: int) -> ApiResponse:
     return {"message": "User deleted"}
 
 @app.post("/users", status_code=200, tags=["Users"])
-def create_user(mail: str, name: str) -> ApiResponse:
+def create_user(user: UserPostCreateRequest) -> ApiResponse:
     sql = "INSERT INTO user (mail, name) VALUES (%s, %s)"
-    values = (mail, name)
+    values = (user.mail, user.name)
 
     c.execute(sql, values)
 
@@ -202,9 +202,9 @@ def get_user_groups(user_id: int) -> List[Group]:
 
 
 @app.post("/groups", status_code=200, tags=["Groups"])
-def create_group(gp_name: str) -> ApiResponse:
+def create_group(group: GroupRequest) -> ApiResponse:
     sql = "INSERT INTO user_group (group_name) VALUES (%s)"
-    values = [gp_name]
+    values = [group.name]
 
     c.execute(sql, values)
 
@@ -234,7 +234,7 @@ def get_group_users(group_id: int) -> List[int]:
         raise HTTPException(status_code=404, detail="Item not found")
     return res
 
-@app.post("/groups/{group_id}/users/{user_id}", status_code=200, tags=["Users from Groups"])
+@app.put("/groups/{group_id}/users/{user_id}", status_code=200, tags=["Users from Groups"])
 def add_user_to_group(group_id: int, user_id: int) -> ApiResponse:
     sql = "INSERT INTO user_group_membership (user_id, group_id) VALUES (%s, %s)"
     values = (user_id, group_id)
@@ -264,9 +264,9 @@ def get_group_recommendations(group_id: int) -> List[MovieReccomendationResponse
     return res
 
 @app.post("/groups/{group_id}/recommendations", status_code=200, tags=["Recommendations"])
-def add_group_recommendations(group_id: int, movie_id: int, accuracy: float) -> ApiResponse:
+def add_group_recommendations(group_id: int, rec: GroupPostRecommendationRequest) -> ApiResponse:
     sql = "INSERT INTO movie_group_recommendation (accuracy, group_id, movie_id) VALUES (%s, %s, %s, %s)"
-    values = (accuracy, group_id, movie_id)
+    values = (rec.accuracy, group_id, rec.movie_id)
 
     c.execute(sql, values)
 
@@ -283,7 +283,7 @@ def get_group_tastes(group_id: int) -> List[GenreResponse]:
         raise HTTPException(status_code=404, detail="Item not found")
     return res
 
-@app.post("/groups/{group_id}/tastes/{genre_id}", status_code=200, tags=["Group tastes"])
+@app.put("/groups/{group_id}/tastes/{genre_id}", status_code=200, tags=["Group tastes"])
 def add_taste_for_group(group_id: int, genre_id: int) -> ApiResponse:
     sql = "INSERT INTO group_genre_preferences (group_id, genre_id) VALUES (%s, %s)"
     values = (group_id, genre_id)
