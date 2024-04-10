@@ -189,8 +189,17 @@ def create_user(mail: str, name: str) -> ApiResponse:
 
     return {"message": "User created"}
 
+@app.get("/user/{user_id}/groups", status_code=200, tags=["Users"])
+def get_user_groups(user_id: int) -> List[Group]:
+    c.execute("""SELECT g.* FROM user_group g JOIN user_group_membership um ON g.group_id = um.group_id WHERE um.user_id LIKE %s""" % (user_id))
+
+    res = c.fetchall()
+    if res is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return res
 
 # GROUPS
+
 
 @app.post("/groups", status_code=200, tags=["Groups"])
 def create_group(gp_name: str) -> ApiResponse:

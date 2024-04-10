@@ -1,9 +1,11 @@
 package utils
 
 import (
+	"context"
 	"db/pkg/dbapi"
 	"os"
 
+	tmdb "github.com/cyruzin/golang-tmdb"
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/log"
 	"github.com/joho/godotenv"
@@ -20,7 +22,23 @@ type UserInfo struct {
 	PreferredUsername string `json:"preferred_username"`
 }
 
-func CheckAuth(c fiber.Ctx) (*UserInfo, error) {
+func CheckAuth(c fiber.Ctx) (int, error) {
+	user, err := CheckAuthKeycloak(c)
+	if err != nil {
+		return 0, err
+	}
+	ctx := context.Background()
+	userResp, err := AppConfig.DBClient.GetUserInfosByMailUsersEmailBymailGetWithResponse(ctx, user.Email)
+	if err != nil {
+		return 0, err
+	}
+	if userResp.StatusCode() != 200 {
+		return 0, nil
+	}
+	return userResp.JSON200.UserId, nil
+}
+
+func CheckAuthKeycloak(c fiber.Ctx) (*UserInfo, error) {
 	return &UserInfo{
 		Sub:               "123",
 		Email:             "test@example.com",
@@ -58,16 +76,13 @@ type Config struct {
 	LoginConfig oauth2.Config
 	DBApiURL    string
 	DBClient    *dbapi.ClientWithResponses
+	TmdbClient  *tmdb.Client
 }
 
 var AppConfig Config
 
 func KeycloakConfig() oauth2.Config {
-	err := godotenv.Load(".env")
-
-	if err != nil {
-		log.Fatalf("Some error occured. Err: %s", err)
-	}
+	godotenv.Load(".env")
 
 	AppConfig.LoginConfig = oauth2.Config{
 		RedirectURL:  "http://localhost:3000/callback",
@@ -85,11 +100,7 @@ func KeycloakConfig() oauth2.Config {
 }
 
 func DBApiConfig() string {
-	err := godotenv.Load(".env")
-
-	if err != nil {
-		log.Fatalf("Some error occured. Err: %s", err)
-	}
+	godotenv.Load(".env")
 
 	AppConfig.DBApiURL = os.Getenv("DB_API_URL")
 	client, err := dbapi.NewClientWithResponses(AppConfig.DBApiURL)
@@ -98,4 +109,15 @@ func DBApiConfig() string {
 	}
 	AppConfig.DBClient = client
 	return AppConfig.DBApiURL
+}
+
+func TmdbConfig() *tmdb.Client {
+	godotenv.Load(".env")
+	var err error
+
+	AppConfig.TmdbClient, err = tmdb.Init(os.Getenv("TMDB_API_KEY"))
+	if err != nil {
+		log.Fatalf("Error creating client: %s", err)
+	}
+	return AppConfig.TmdbClient
 }

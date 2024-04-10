@@ -29,3 +29,13 @@
   - [Grafana](https://grafana.com/)
   - [Loki](https://grafana.com/loki/)
   - [Grafana-Agent](https://grafana.com/oss/grafana-agent/)
+
+## TODO
+
+- API
+  - [ ] Api for Tastes
+  <!-- - [ ] Add Tastes to user if movie rating is above 3 -->
+- [ ] Recommendation Engine
+  - [ ] Create a Queue for the recommendation engine
+  - [ ] Add a worker to process the queue
+  - [ ] Cleanup job for user tastes

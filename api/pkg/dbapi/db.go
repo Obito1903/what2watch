@@ -118,6 +118,9 @@ type ClientInterface interface {
 	// AddUserToGroupGroupsGroupIdUsersUserIdPost request
 	AddUserToGroupGroupsGroupIdUsersUserIdPost(ctx context.Context, groupId int, userId int, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetUserGroupsUserUserIdGroupsGet request
+	GetUserGroupsUserUserIdGroupsGet(ctx context.Context, userId int, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CreateUserUsersPost request
 	CreateUserUsersPost(ctx context.Context, params *CreateUserUsersPostParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -268,6 +271,18 @@ func (c *Client) RemoveUserFromGroupGroupsGroupIdUsersUserIdDelete(ctx context.C
 
 func (c *Client) AddUserToGroupGroupsGroupIdUsersUserIdPost(ctx context.Context, groupId int, userId int, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAddUserToGroupGroupsGroupIdUsersUserIdPostRequest(c.Server, groupId, userId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetUserGroupsUserUserIdGroupsGet(ctx context.Context, userId int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetUserGroupsUserUserIdGroupsGetRequest(c.Server, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -836,6 +851,40 @@ func NewAddUserToGroupGroupsGroupIdUsersUserIdPostRequest(server string, groupId
 	}
 
 	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetUserGroupsUserUserIdGroupsGetRequest generates requests for GetUserGroupsUserUserIdGroupsGet
+func NewGetUserGroupsUserUserIdGroupsGetRequest(server string, userId int) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "user_id", runtime.ParamLocationPath, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/user/%s/groups", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -1475,6 +1524,9 @@ type ClientWithResponsesInterface interface {
 	// AddUserToGroupGroupsGroupIdUsersUserIdPostWithResponse request
 	AddUserToGroupGroupsGroupIdUsersUserIdPostWithResponse(ctx context.Context, groupId int, userId int, reqEditors ...RequestEditorFn) (*AddUserToGroupGroupsGroupIdUsersUserIdPostResponse, error)
 
+	// GetUserGroupsUserUserIdGroupsGetWithResponse request
+	GetUserGroupsUserUserIdGroupsGetWithResponse(ctx context.Context, userId int, reqEditors ...RequestEditorFn) (*GetUserGroupsUserUserIdGroupsGetResponse, error)
+
 	// CreateUserUsersPostWithResponse request
 	CreateUserUsersPostWithResponse(ctx context.Context, params *CreateUserUsersPostParams, reqEditors ...RequestEditorFn) (*CreateUserUsersPostResponse, error)
 
@@ -1739,6 +1791,29 @@ func (r AddUserToGroupGroupsGroupIdUsersUserIdPostResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AddUserToGroupGroupsGroupIdUsersUserIdPostResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetUserGroupsUserUserIdGroupsGetResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]Group
+	JSON422      *HTTPValidationError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetUserGroupsUserUserIdGroupsGetResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetUserGroupsUserUserIdGroupsGetResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -2132,6 +2207,15 @@ func (c *ClientWithResponses) AddUserToGroupGroupsGroupIdUsersUserIdPostWithResp
 		return nil, err
 	}
 	return ParseAddUserToGroupGroupsGroupIdUsersUserIdPostResponse(rsp)
+}
+
+// GetUserGroupsUserUserIdGroupsGetWithResponse request returning *GetUserGroupsUserUserIdGroupsGetResponse
+func (c *ClientWithResponses) GetUserGroupsUserUserIdGroupsGetWithResponse(ctx context.Context, userId int, reqEditors ...RequestEditorFn) (*GetUserGroupsUserUserIdGroupsGetResponse, error) {
+	rsp, err := c.GetUserGroupsUserUserIdGroupsGet(ctx, userId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetUserGroupsUserUserIdGroupsGetResponse(rsp)
 }
 
 // CreateUserUsersPostWithResponse request returning *CreateUserUsersPostResponse
@@ -2564,6 +2648,39 @@ func ParseAddUserToGroupGroupsGroupIdUsersUserIdPostResponse(rsp *http.Response)
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest ApiResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest HTTPValidationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetUserGroupsUserUserIdGroupsGetResponse parses an HTTP response from a GetUserGroupsUserUserIdGroupsGetWithResponse call
+func ParseGetUserGroupsUserUserIdGroupsGetResponse(rsp *http.Response) (*GetUserGroupsUserUserIdGroupsGetResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetUserGroupsUserUserIdGroupsGetResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []Group
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

@@ -20,6 +20,12 @@ type GenreResponse struct {
 	Name    string `json:"name"`
 }
 
+// Group defines model for Group.
+type Group struct {
+	GroupId   int    `json:"group_id"`
+	GroupName string `json:"group_name"`
+}
+
 // GroupResponse defines model for GroupResponse.
 type GroupResponse struct {
 	GroupId int    `json:"group_id"`

@@ -15,7 +15,7 @@ func RegisterUsersRoutes(app *fiber.App) {
 }
 
 func GetMe(c fiber.Ctx) error {
-	user, err := utils.CheckAuth(c)
+	user, err := utils.CheckAuthKeycloak(c)
 	if err != nil {
 		return c.Status(401).JSON(utils.ApiError{Message: "Unauthorized"})
 
@@ -56,4 +56,20 @@ func GetMe(c fiber.Ctx) error {
 	}
 
 	return c.JSON(userResp.JSON200)
+}
+
+func GetUserRecommenations(c fiber.Ctx) error {
+	userID, err := utils.CheckAuth(c)
+	if err != nil {
+		return c.Status(401).JSON(utils.ApiError{Message: "Unauthorized"})
+	}
+	rec, err := utils.AppConfig.DBClient.GetRecommendationsUsersUserIdRecommendationsGetWithResponse(context.Background(), userID)
+	if err != nil {
+		log.Error(err)
+		return c.Status(500).JSON(utils.ApiError{Message: "Error getting recommendations"})
+	}
+	if rec.StatusCode() != 200 {
+		return c.Status(rec.StatusCode()).SendString(string(rec.Body))
+	}
+	return c.JSON(rec.JSON200)
 }

@@ -1,8 +1,28 @@
-version: "3"
 services:
   ##############################
   #    Components Services     #
   ##############################
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: api
+    restart: unless-stopped
+    depends_on:
+      - db-api
+    environment:
+      AUTH_URL: http://keycloak:8080/realms/what2watch/protocol/openid-connect/userinfo
+      DB_API_URL: http://db-api:8000
+      TMDB_API_KEY: ${TMDB_API_KEY:-}
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.api.rule=Host(`api.${DOMAIN:-localhost}`)
+      - traefik.http.routers.api.entrypoints=web,websecure
+    develop:
+      watch:
+        - action: rebuild
+          path: ./api
+          target: /app
   db-api:
     build:
       context: ./db
@@ -21,16 +41,29 @@ services:
       - traefik.enable=true
       - traefik.http.routers.db-api.rule=Host(`db-api.${DOMAIN:-localhost}`)
       - traefik.http.routers.db-api.entrypoints=web,websecure
-  front:
-    build:
-      context: ./front
-      dockerfile: Dockerfile
-    container_name: front
-    restart: unless-stopped
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.front.rule=Host(`what2watch.${DOMAIN:-localhost}`)
-      - traefik.http.routers.front.entrypoints=web,websecure
+  # front:
+  #   build:
+  #     context: ./front
+  #     dockerfile: Dockerfile
+  #   container_name: front
+  #   restart: unless-stopped
+  #   environment:
+  #     API_URL: http://api.localhost
+  #   labels:
+  #     - traefik.enable=true
+  #     - traefik.http.routers.front.rule=Host(`what2watch.${DOMAIN:-localhost}`)
+  #     - traefik.http.routers.front.entrypoints=web,websecure
+  #   develop:
+  #     watch:
+  #       - action: sync
+  #         path: ./front
+  #         target: /app
+  #         ignore:
+  #           - node_modules
+  #           - build
+  #           - .svelte-kit
+  #       - action: rebuild
+  #         path: ./front/package.json
   ##############################
   #    Proxy/Auth Services     #
   ##############################

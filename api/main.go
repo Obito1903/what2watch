@@ -1,12 +1,14 @@
 package main
 
 import (
+	"db/pkg/tmdb"
 	"db/pkg/users"
 	"db/pkg/utils"
 	"net/http"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/log"
+	"github.com/gofiber/fiber/v3/middleware/cors"
 )
 
 func checkAuth(token string) bool {
@@ -34,11 +36,18 @@ func checkAuth(token string) bool {
 
 func main() {
 	app := fiber.New()
+	app.Use(cors.New())
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "http://localhost:5173, http://what2watch.localhost",
+		AllowHeaders: "Origin, Content-Type, Accept",
+	}))
 
 	utils.KeycloakConfig()
 	utils.DBApiConfig()
+	utils.TmdbConfig()
 
 	users.RegisterUsersRoutes(app)
+	tmdb.RegisterTmdbRoutes(app)
 
 	log.SetLevel(log.LevelDebug)
 	log.Fatal(app.Listen(":3000"))
