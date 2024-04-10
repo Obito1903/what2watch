@@ -1,6 +1,7 @@
 package main
 
 import (
+	"db/pkg/groups"
 	"db/pkg/tmdb"
 	"db/pkg/users"
 	"db/pkg/utils"
@@ -11,7 +12,7 @@ import (
 	"github.com/gofiber/fiber/v3/middleware/cors"
 )
 
-func checkAuth(token string) bool {
+func _checkAuth(token string) bool {
 	// Keycloak API call to validate token using headers
 	req, err := http.NewRequest("GET", "http://auth.localhost/realms/what2watch/protocol/openid-connect/userinfo", nil)
 	if err != nil {
@@ -48,6 +49,7 @@ func main() {
 
 	users.RegisterUsersRoutes(app)
 	tmdb.RegisterTmdbRoutes(app)
+	groups.RegisterGroupsRoute(app)
 
 	log.SetLevel(log.LevelDebug)
 	log.Fatal(app.Listen(":3000"))

@@ -8,6 +8,7 @@ import (
 	tmdb "github.com/cyruzin/golang-tmdb"
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/log"
+	"github.com/gofiber/fiber/v3/middleware/proxy"
 	"github.com/joho/godotenv"
 	"golang.org/x/oauth2"
 )
@@ -36,6 +37,14 @@ func CheckAuth(c fiber.Ctx) (int, error) {
 		return 0, nil
 	}
 	return userResp.JSON200.UserId, nil
+}
+
+func AuthProxyWrapper(c fiber.Ctx, addr string) error {
+	_, err := CheckAuth(c)
+	if err != nil {
+		return c.Status(401).JSON(ApiError{Message: "Unauthorized"})
+	}
+	return proxy.Forward(addr)(c)
 }
 
 func CheckAuthKeycloak(c fiber.Ctx) (*UserInfo, error) {
