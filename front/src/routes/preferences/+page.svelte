@@ -9,7 +9,6 @@
 
 	activePage.set('preferences');
 
-
 	// ----------------- Genres -----------------
 	const genres = [
 		'Action',
