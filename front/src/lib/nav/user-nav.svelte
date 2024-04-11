@@ -22,7 +22,7 @@
 	<DropdownMenu.Content class="w-56" align="end">
 		<DropdownMenu.Label class="font-normal">
 			<div class="flex flex-col space-y-1">
-				<p class="text-sm font-medium leading-none">shadcn</p>
+				<p class="text-sm font-medium leading-none">{$page.data.session?.user?.name}</p>
 				<p class="text-muted-foreground text-xs leading-none">{$page.data.session?.user?.email}</p>
 			</div>
 		</DropdownMenu.Label>
