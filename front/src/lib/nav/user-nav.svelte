@@ -3,44 +3,13 @@
 	import * as Avatar from '$lib/registry/new-york/ui/avatar/index.js';
 	import { Button } from '$lib/registry/new-york/ui/button/index.js';
 
-	import { signIn } from '@auth/sveltekit/client';
-	import { onMount } from 'svelte';
-
-	
-	export let sessionToken : string | undefined;
-	
-
-	function checkUserLoggedIn() {
-		console.log("Checking if user is logged in");
-		fetch('http://auth.localhost/realms/what2watch/protocol/openid-connect/userinfo', {
-			method: 'GET',
-			headers: {
-				'Authorization': 'Bearer ' + sessionToken
-			},
-			
-		}).then(
-			(response) => {
-				console.log("Got " + response.status + " from userinfo endpoint");
-				if (response.status === 200) {
-					console.log("User is logged in");
-				}
-			}
-		);
-		
-	}
-
-	onMount(() => {
-		console.log("Session token: " + sessionToken);
-		checkUserLoggedIn();
-	});
-	
-
-	
+	import { signIn, signOut } from '@auth/sveltekit/client';
+	import { page } from '$app/stores';
+	import { SignOut } from '@auth/sveltekit/components';
 </script>
-
-<!-- {#if } -->
-<button on:click={() => signIn()}>register </button>
-
+{#if !$page.data.session?.user}
+<Button on:click={() => signIn()}>Sign in</Button>
+{:else}
 <DropdownMenu.Root>
 	<DropdownMenu.Trigger asChild let:builder>
 		<Button variant="ghost" builders={[builder]} class="relative h-8 w-8 rounded-full">
@@ -54,7 +23,7 @@
 		<DropdownMenu.Label class="font-normal">
 			<div class="flex flex-col space-y-1">
 				<p class="text-sm font-medium leading-none">shadcn</p>
-				<p class="text-muted-foreground text-xs leading-none">m@example.com</p>
+				<p class="text-muted-foreground text-xs leading-none">{$page.data.session?.user?.email}</p>
 			</div>
 		</DropdownMenu.Label>
 		<DropdownMenu.Separator />
@@ -69,9 +38,11 @@
 			</DropdownMenu.Item>
 		</DropdownMenu.Group>
 		<DropdownMenu.Separator />
-		<DropdownMenu.Item>
-			Log out
+		<DropdownMenu.Item on:click={() => signOut()}>
+			Sign out
 			<DropdownMenu.Shortcut>⇧⌘Q</DropdownMenu.Shortcut>
 		</DropdownMenu.Item>
 	</DropdownMenu.Content>
 </DropdownMenu.Root>
+
+{/if}
