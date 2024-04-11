@@ -1,8 +1,45 @@
 <script lang="ts">
-	import * as DropdownMenu from "$lib/registry/new-york/ui/dropdown-menu/index.js";
-	import * as Avatar from "$lib/registry/new-york/ui/avatar/index.js";
-	import { Button } from "$lib/registry/new-york/ui/button/index.js";
+	import * as DropdownMenu from '$lib/registry/new-york/ui/dropdown-menu/index.js';
+	import * as Avatar from '$lib/registry/new-york/ui/avatar/index.js';
+	import { Button } from '$lib/registry/new-york/ui/button/index.js';
+
+	import { signIn } from '@auth/sveltekit/client';
+	import { onMount } from 'svelte';
+
+	
+	export let sessionToken : string | undefined;
+	
+
+	function checkUserLoggedIn() {
+		console.log("Checking if user is logged in");
+		fetch('http://auth.localhost/realms/what2watch/protocol/openid-connect/userinfo', {
+			method: 'GET',
+			headers: {
+				'Authorization': 'Bearer ' + sessionToken
+			},
+			
+		}).then(
+			(response) => {
+				console.log("Got " + response.status + " from userinfo endpoint");
+				if (response.status === 200) {
+					console.log("User is logged in");
+				}
+			}
+		);
+		
+	}
+
+	onMount(() => {
+		console.log("Session token: " + sessionToken);
+		checkUserLoggedIn();
+	});
+	
+
+	
 </script>
+
+<!-- {#if } -->
+<button on:click={() => signIn()}>register </button>
 
 <DropdownMenu.Root>
 	<DropdownMenu.Trigger asChild let:builder>
@@ -17,7 +54,7 @@
 		<DropdownMenu.Label class="font-normal">
 			<div class="flex flex-col space-y-1">
 				<p class="text-sm font-medium leading-none">shadcn</p>
-				<p class="text-xs leading-none text-muted-foreground">m@example.com</p>
+				<p class="text-muted-foreground text-xs leading-none">m@example.com</p>
 			</div>
 		</DropdownMenu.Label>
 		<DropdownMenu.Separator />

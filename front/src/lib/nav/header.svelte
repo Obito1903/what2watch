@@ -2,6 +2,7 @@
 	import { default as Nav } from '$lib/nav/navbar.svelte';
     import { default as UserNav } from '$lib/nav/user-nav.svelte';
 
+	export let sessionToken : string | undefined;
 </script>
 
 
@@ -11,7 +12,7 @@
 			<Nav class="mx-6"/>
             <div class="ml-auto flex items-center space-x-4">
 				<!-- <Search /> -->
-				<UserNav/>
+				<UserNav sessionToken={sessionToken}/>
 			</div>
 		</div>
 	</div>
