@@ -5,6 +5,6 @@
 
 </script>
 
-<Header sessionToken={undefined}/>
+<Header/>
 <ModeWatcher />
 <slot />
