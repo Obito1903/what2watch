@@ -17,6 +17,15 @@ type Movie struct {
 	Genres      []Genre `json:"genres"`
 }
 
+type MovieDetails struct {
+	ID          int64   `json:"id"`
+	Title       string  `json:"title"`
+	Genres      []Genre `json:"genres"`
+	Overview    string  `json:"overview"`
+	Popularity  float32 `json:"popularity"`
+	ReleaseDate string  `json:"release_date"`
+}
+
 func movieFromMoviePopularResults(tmdbMovies *tmdbApi.MoviePopularResults) []Movie {
 
 	var movies []Movie
