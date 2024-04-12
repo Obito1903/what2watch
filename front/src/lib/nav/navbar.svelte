@@ -20,7 +20,7 @@
 
 	<a
 		href="/movies"
-		class="hover:text-primary text-sm font-medium transition-colors {$activePage === 'preferences'
+		class="hover:text-primary text-sm font-medium transition-colors {$activePage === 'movies'
 			? 'text-primary'
 			: 'text-muted-foreground'}"
 	>
