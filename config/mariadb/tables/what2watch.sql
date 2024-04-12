@@ -26,7 +26,7 @@ CREATE TABLE user (
 CREATE TABLE movie_group_recommendation (
     group_id INT,
     accuracy FLOAT,
-    movie_id VARCHAR(255),
+    movie_id INT,
     PRIMARY KEY (movie_id, group_id),
     FOREIGN KEY (group_id) REFERENCES user_group(group_id)
 );
@@ -34,7 +34,7 @@ CREATE TABLE movie_group_recommendation (
 CREATE TABLE movie_user_recommendation (
     user_id INT,
     accuracy FLOAT,
-    movie_id VARCHAR(255),
+    movie_id INT,
     PRIMARY KEY (movie_id, user_id),
     FOREIGN KEY (user_id) REFERENCES user(user_id)
 );
@@ -45,7 +45,7 @@ CREATE TABLE review (
     rating INT,
     viewed BOOLEAN,
     user_id INT,
-    movie_id VARCHAR(255),
+    movie_id INT,
     FOREIGN KEY (user_id) REFERENCES user(user_id)
 );
 

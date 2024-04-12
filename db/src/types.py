@@ -24,6 +24,7 @@ class UserResponse(BaseModel):
 
 class UserPostMovieRequest(BaseModel):
     rating: int
+    viewed: bool
 
 class UserPostRecommendationRequest(BaseModel):
     movie_id: int
