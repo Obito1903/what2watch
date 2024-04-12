@@ -66,8 +66,8 @@ def get_seen_movies(user_id: int) -> List[str]:
 
 @app.post("/users/{user_id}/movies/{movie_id}", status_code=200, tags=["Movies of Users"])
 def add_movie_to_watched(user_id: int, movie_id: int, rating: UserPostMovieRequest) -> ApiResponse:
-    sql = "INSERT INTO review (rating, user_id, genre_id) VALUES (%s, %s, %s)"
-    values = (rating.rating, user_id, movie_id)
+    sql = "INSERT INTO review (rating, user_id, movie_id, viewed) VALUES (%s, %s, %s, %s)"
+    values = (rating.rating, user_id, movie_id, rating.viewed)
 
     c.execute(sql, values)
 
