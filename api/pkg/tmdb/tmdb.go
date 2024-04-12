@@ -2,9 +2,11 @@ package tmdb
 
 import (
 	"db/pkg/utils"
+	"strconv"
 
 	tmdbApi "github.com/cyruzin/golang-tmdb"
 	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/proxy"
 )
 
 var tmdbClient *tmdbApi.Client
@@ -14,6 +16,8 @@ func RegisterTmdbRoutes(app *fiber.App) {
 	tmdb := app.Group("/tmdb")
 	tmdb.Get("/movies/toprated", GetMoviesTopRated)
 	tmdb.Get("/movies/popular", GetMoviesPopular)
+	tmdb.Get("/movies/:movie_id/details", GetMovieDetails)
+	tmdb.Get("/search", GetSearchMovie)
 }
 
 func GetMoviesTopRated(c fiber.Ctx) error {
@@ -36,4 +40,39 @@ func GetMoviesPopular(c fiber.Ctx) error {
 	movies := movieFromMoviePopularResults(res.MoviePopularResults)
 
 	return c.JSON(movies)
+}
+
+func GetSearchMovie(c fiber.Ctx) error {
+	return proxy.Forward("https://api.themoviedb.org/3/search/movie")(c)
+}
+
+func GetMovieDetails(c fiber.Ctx) error {
+	movieID, err := strconv.Atoi(c.Params("movie_id"))
+	if err != nil {
+		return c.Status(400).JSON(utils.ApiError{Message: "Invalid movie ID"})
+	}
+	res, err := tmdbClient.GetMovieDetails(movieID, map[string]string{"language": "en-US"})
+	if err != nil {
+		return c.Status(500).JSON(utils.ApiError{Message: "Error getting movie details"})
+	}
+
+	genres := []Genre{}
+
+	for _, genre := range res.Genres {
+		genres = append(genres, Genre{
+			ID:   genre.ID,
+			Name: genre.Name,
+		})
+	}
+
+	movie := MovieDetails{
+		ID:          res.ID,
+		Title:       res.Title,
+		Genres:      genres,
+		Overview:    res.Overview,
+		Popularity:  res.Popularity,
+		ReleaseDate: res.ReleaseDate,
+	}
+
+	return c.JSON(movie)
 }
