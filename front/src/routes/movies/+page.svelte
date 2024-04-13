@@ -8,6 +8,7 @@
 	import * as api from '$lib/api';
 	import type { Movie } from '$lib/types';
 	import { onMount } from 'svelte';
+	import { addToMyMovies } from '$lib/api';
 
 	let topMovies: Movie[] = [];
 	let popularMovies: Movie[] = [];
@@ -38,6 +39,12 @@
 	$: filteredMovies = selectedMovies.filter((movie) =>
 		movie.title.toLowerCase().includes(searchQuery.toLowerCase())
 	);
+
+	function addMovie(movie: Movie) {
+		addToMyMovies(movie.id).then(() => {
+			console.log('Movie added to my movies');
+		});
+	}
 </script>
 
 <Card.Root>
@@ -50,7 +57,6 @@
 			<Button type="submit">Search</Button>
 		</form>
 
-		<!-- Switch to toggle between popular and top-rated movies -->
 		<div class="mt-4 flex justify-center space-x-4">
 			<Button on:click={() => switchMovies('topRated')}>
 				<span>Top Rated</span>
@@ -68,6 +74,7 @@
 					<Card.Description class="mt-2 text-center text-sm">
 						{movie.release_date}
 					</Card.Description>
+					<Button class="mt-4" on:click={()=> {addMovie(movie);}}>Add to my movies</Button>
 					<Button class="mt-4">View details</Button>
 				</Card.Root>
 			{/each}

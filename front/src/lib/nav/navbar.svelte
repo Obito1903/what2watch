@@ -5,10 +5,13 @@
 	export { className as class };
 
 	import { activePage } from '$lib/stores';
+	import { page } from '$app/stores';
+
+	$: loggedIn = $page.data.session?.user;
 </script>
 
 <nav class={cn('flex items-center space-x-4 lg:space-x-6', className)}>
-	<h1 class=""> What2Watch </h1>
+	<h1 class="">What2Watch</h1>
 	<a
 		href="/"
 		class="hover:text-primary text-sm font-medium transition-colors {$activePage === ''
@@ -29,10 +32,11 @@
 
 	<a
 		href="/recommendations"
-		class="hover:text-primary text-sm font-medium transition-colors {$activePage ===
-		'recommendations'
+		class="hover:text-primary text-sm font-medium transition-colors {$activePage === 'recommendations'
 			? 'text-primary'
 			: 'text-muted-foreground'}"
+		class:disabled={!loggedIn}
+		on:click={e => {if(!loggedIn) {e.preventDefault();}}}
 	>
 		Recommendations
 	</a>
@@ -42,10 +46,11 @@
 		class="hover:text-primary text-sm font-medium transition-colors {$activePage === 'groups'
 			? 'text-primary'
 			: 'text-muted-foreground'}"
+		class:disabled={!loggedIn}
+		on:click={e => {if(!loggedIn) {e.preventDefault();}}}
 	>
 		Groups
 	</a>
-
 
 	<a
 		href="/terms"
@@ -56,3 +61,10 @@
 		Terms & Conditions
 	</a>
 </nav>
+
+<style>
+	.disabled {
+		pointer-events: none;
+		opacity: 0.5;
+	}
+</style>

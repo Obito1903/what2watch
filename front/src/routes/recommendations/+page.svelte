@@ -3,7 +3,7 @@
 	import * as Card from '$lib/components/ui/card/index';
 	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import type { Group } from '$lib/global/group';
+	import type { Group } from '$lib/types';
 	import * as Avatar from '$lib/components/ui/avatar';
 
 	activePage.set('recommendations');

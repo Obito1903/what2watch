@@ -6,6 +6,15 @@
 	import { signIn, signOut } from '@auth/sveltekit/client';
 	import { page } from '$app/stores';
 	import { SignOut } from '@auth/sveltekit/components';
+	import { onMount } from 'svelte';
+	import { createUserInDB } from '$lib/user/user';
+
+	onMount(() =>  {
+		if($page.data.session?.user)
+		{
+			createUserInDB();
+		}
+	});
 </script>
 {#if !$page.data.session?.user}
 <Button on:click={() => signIn()}>Sign in</Button>
@@ -14,8 +23,8 @@
 	<DropdownMenu.Trigger asChild let:builder>
 		<Button variant="ghost" builders={[builder]} class="relative h-8 w-8 rounded-full">
 			<Avatar.Root class="h-8 w-8">
-				<Avatar.Image src="/avatars/01.png" alt="@shadcn" />
-				<Avatar.Fallback>SC</Avatar.Fallback>
+				<Avatar.Image src="/avatars/01.png" alt="avatar" />
+				<Avatar.Fallback>{$page.data?.session?.user?.name[0]}</Avatar.Fallback>
 			</Avatar.Root>
 		</Button>
 	</DropdownMenu.Trigger>

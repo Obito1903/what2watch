@@ -12,3 +12,9 @@ export type Movie = {
   release_date: string;
   genres: string[];
 }
+
+export type Group = {
+    id: number;
+    name: string;
+    members: string[];
+};
