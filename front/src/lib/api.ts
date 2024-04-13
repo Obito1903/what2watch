@@ -1,16 +1,38 @@
 
+export const API_URL = 'http://api.localhost';
+
 export function get(url: string) {
   return fetch(url).then(res => res.json())
 }
 
+export function post(url: string, data: any) {
+    return fetch(url, {
+        method: 'POST',
+        headers: {
+        'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data),
+    }).then(res => res.json())
+    
+}
 
+
+// MOVIES
 export function getTopRatedMovies() {
-  return get('http://api.localhost/tmdb/movies/toprated');
+  return get(`${API_URL}/tmdb/movies/toprated`);
 }
 
 export function getPopularMovies() {
-  return get('http://api.localhost/tmdb/movies/popular');
+  return get(`${API_URL}/tmdb/movies/popular`);
 }
 export function getMovieDetails(id: number) {
-  return get(`http://api.localhost/tmdb/movies/${id}`);
+  return get(`${API_URL}/tmdb/movies/${id}`);
+}
+
+export function addToMyMovies(id: number) {
+    return post(`${API_URL}/users/movies/`, {id});
+}
+// USERS
+export function getMe() {
+    return get(`${API_URL}/users/me`);
 }

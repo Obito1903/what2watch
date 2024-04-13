@@ -5,7 +5,7 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Command from '$lib/components/ui/command';
 	import * as Popover from '$lib/components/ui/popover';
-	import type { Group } from '$lib/global/group';
+	import type { Group } from '$lib/types';
 	import * as Avatar from '$lib/components/ui/avatar';
 	import { tick } from 'svelte';
 
@@ -25,12 +25,9 @@
 
 	function deleteMember(member: string, groupId: number) {
 		console.log(member);
-		// Find the index of the group from which you're removing the member
 		const groupIndex = myGroups.findIndex((group) => group.id === groupId);
 		if (groupIndex !== -1) {
-			// Create a new array without the member
 			const updatedMembers = myGroups[groupIndex].members.filter((m) => m !== member);
-			// Update the group with the new members array
 			myGroups = myGroups.map((group, index) =>
 				index === groupIndex ? { ...group, members: updatedMembers } : group
 			);
@@ -39,12 +36,9 @@
 
 	function addMember(member: string, groupId: number) {
 		console.log(member);
-		// Find the index of the group to which you're adding the member
 		const groupIndex = myGroups.findIndex((group) => group.id === groupId);
 		if (groupIndex !== -1) {
-			// Create a new array with the updated members
 			const updatedMembers = [...myGroups[groupIndex].members, member];
-			// Update the group with the new members array
 			myGroups = myGroups.map((group, index) =>
 				index === groupIndex ? { ...group, members: updatedMembers } : group
 			);
