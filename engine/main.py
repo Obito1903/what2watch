@@ -5,12 +5,26 @@ from fastapi import FastAPI,BackgroundTasks
 import requests
 import os
 import tmdbsimple as tmdb
+from fastapi.middleware.cors import CORSMiddleware
 
 
 DBApi = os.getenv("DB_API") or "http://db-api.localhost"
 tmdb.API_KEY = os.getenv("TMDB_API_KEY")
 
 app = FastAPI()
+
+origins = [
+    "http://what2watch.localhost",
+    "http://localhost:5173",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class UserRequest(BaseModel):
     user_id: int
