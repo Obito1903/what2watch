@@ -7,18 +7,19 @@
 	import * as Popover from '$lib/components/ui/popover';
 	import type { Group } from '$lib/types';
 	import * as Avatar from '$lib/components/ui/avatar';
-	import { tick } from 'svelte';
+	import { onMount, tick } from 'svelte';
+	import * as api from '$lib/api';
+	import Input from '$lib/components/ui/input/input.svelte';
 
 	activePage.set('groups');
-	let users = ['Samuel', 'Quentin', 'Melody', 'Nathan', 'Titou', 'Paul'];
 	let myGroups: Group[] = [
 		{ id: 1, name: 'les foufous de socheau', members: ['Titou', 'Paul'] },
 		{ id: 2, name: 'Eistiens', members: ['Samuel', 'Quentin', 'Melody', 'Nathan'] }
 	];
 
-	let selectedGroup: Group | null = null;
 	let selectedGroupIdToAddMember: number = -1;
-
+	let groupName = '';
+	let emailInput = '';
 	function leaveGroup(groupID: number) {
 		myGroups = myGroups.filter((g) => g.id != groupID);
 	}
@@ -45,6 +46,49 @@
 			selectedGroupIdToAddMember = -1;
 		}
 	}
+
+	function addMemberByEmail(email: string) {
+		api.getUserByEmail(email).then((user) => {
+			if (user) {
+				api.addUserToGroup(selectedGroupIdToAddMember, user.user_id).then(() => {
+					addMember(user.name, selectedGroupIdToAddMember);
+				});
+			}
+		});
+	}
+
+	function createGroup(name: string) {
+		console.log(name);
+		api.createGroup(name).then((group) => {
+			let groupId = Number(group.message);
+			myGroups = [...myGroups, { id: groupId, name: name, members: [] }];
+
+			api.getMe().then((me) => {
+				api.addUserToGroup(groupId, me.user_id).then(() => {
+					myGroups = myGroups.map((group) =>
+						group.id === groupId ? group = { ...group, members: [me.name] } : group
+					);
+					console.log('User added to group');
+				});
+			});
+		});
+	}
+	onMount(() => {
+		api.getGroups().then((groups) => {
+	
+			// for (let group of groups) {
+			// 	let gpmembers: string[] = [];
+			// 	api.getGroupMembers(group.group_id).then((members) => {
+			// 		members.forEach(member => {
+			// 			api.getUserByID(member.user_id).then((user) => {
+			// 				gpmembers.push(user.name);
+			// 			});
+			// 		});
+			// 		myGroups = [...myGroups, { id: group.group_id, name: group.name, members: gpmembers }];
+			// 	});
+			// }
+		});
+	});
 </script>
 
 <Card.Root>
@@ -77,7 +121,10 @@
 														<p class="text-sm font-medium leading-none">{member}</p>
 														<p class="text-muted-foreground text-sm">{member}</p>
 													</div>
-													<Button on:click={() => deleteMember(member, group.id)} variant="destructive">
+													<Button
+														on:click={() => deleteMember(member, group.id)}
+														variant="destructive"
+													>
 														KICK</Button
 													>
 												</div>
@@ -98,22 +145,10 @@
 										}}>Add someone to this group</Button
 									>
 								</Popover.Trigger>
-								<Popover.Content class="p-0" align="end">
+								<Popover.Content class="p-5 m-5" align="end">
 									<Command.Root loop>
-										<Command.Input placeholder="Select user to add to the group..." />
-										<Command.List>
-											{#each users as user}
-												<Command.Item class="flex flex-col items-start space-y-1 px-4 py-2">
-													<Button
-														on:click={(event) => {
-															addMember(user, group.id);
-														}}
-														class="m-0 w-full p-0"
-														variant="ghost">{user}</Button
-													>
-												</Command.Item>
-											{/each}
-										</Command.List>
+										<Command.Input bind:value={emailInput} placeholder="Enter the mail address of the user to add to the group..." />
+										<Button on:click={() => {addMemberByEmail(emailInput)}}>Add to the group</Button>
 									</Command.Root>
 								</Popover.Content>
 							</Popover.Root>
@@ -122,6 +157,20 @@
 						</Card.Content>
 					</Card.Root>
 				{/each}
+				<Card.Root class="w-96">
+					<Card.Header>
+						<Card.Title>Create a new group</Card.Title>
+					</Card.Header>
+					<Card.Content>
+						<Input placeholder="Group name..." class="w-64" bind:value={groupName} />
+						<Button
+							on:click={() => {
+								createGroup(groupName);
+							}}
+							variant="default">Create Group</Button
+						>
+					</Card.Content>
+				</Card.Root>
 			</div>
 		</ScrollArea>
 	</Card.Content>

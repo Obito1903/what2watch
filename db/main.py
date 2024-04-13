@@ -214,7 +214,7 @@ def create_user(user: UserPostCreateRequest) -> ApiResponse:
 
     return {"message": "User created"}
 
-@app.get("/user/{user_id}/groups", status_code=200, tags=["Users"])
+@app.get("/users/{user_id}/groups", status_code=200, tags=["Users"])
 def get_user_groups(user_id: int) -> List[Group]:
     c.execute("""SELECT g.* FROM user_group g JOIN user_group_membership um ON g.group_id = um.group_id WHERE um.user_id LIKE %s""" % (user_id))
 
@@ -224,18 +224,17 @@ def get_user_groups(user_id: int) -> List[Group]:
     return res
 
 # GROUPS
-
-
 @app.post("/groups", status_code=200, tags=["Groups"])
 def create_group(group: GroupRequest) -> ApiResponse:
     sql = "INSERT INTO user_group (group_name) VALUES (%s)"
     values = [group.name]
 
     c.execute(sql, values)
-
     db.commit()
 
-    return {"message": "Group created"}
+    group_id = c.lastrowid
+
+    return {"message": str(group_id)}
 
 @app.get("/groups/{group_id}", status_code=200, tags=["Groups"])
 def get_group_infos(group_id: int) -> GroupResponse:
@@ -244,7 +243,11 @@ def get_group_infos(group_id: int) -> GroupResponse:
     res = c.fetchone()
     if res is None:
         raise HTTPException(status_code=404, detail="Item not found")
-    return res
+    
+    return GroupResponse(group_id=res["group_id"], name=res["group_name"])
+    
+    
+    
 
 
 # GROUPS
@@ -257,7 +260,8 @@ def get_group_users(group_id: int) -> List[int]:
     res = c.fetchall()
     if res is None:
         raise HTTPException(status_code=404, detail="Item not found")
-    return res
+    
+    return [row['user_id'] for row in res]
 
 @app.put("/groups/{group_id}/users/{user_id}", status_code=200, tags=["Users from Groups"])
 def add_user_to_group(group_id: int, user_id: int) -> ApiResponse:

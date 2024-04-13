@@ -14,6 +14,17 @@ export function post(url: string, data: any) {
   }).then((res) => res.json());
 }
 
+export function put(url: string, data: any) {
+  return fetch(url, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data),
+  }).then((res) => res.json());
+
+}
+
 // MOVIES
 export function getTopRatedMovies() {
 	return get(`${API_URL}/tmdb/movies/toprated`);
@@ -48,4 +59,37 @@ export function deleteMovie(id: number) {
 // USERS
 export function getMe() {
 	return get(`${API_URL}/users/me`);
+}
+
+export function getUsers() {
+  return get(`${API_URL}/users`);
+}
+
+export function getUserByEmail(email: string) {
+  return get(`${API_URL}/users/email/${email}`);
+
+}
+
+export function getUserByID(id: number) {
+  return get(`${API_URL}/users/${id}`);
+}
+//GROUPS
+export function getGroups() {
+  return get(`${API_URL}/users/groups`);
+}
+
+export function getGroupName(id: number) {
+  return get(`${API_URL}/groups/${id}`);
+}
+
+export function getGroupMembers(id: number) {
+  return get(`${API_URL}/groups/${id}/users`);
+}
+
+export function createGroup(name: string) {
+  return post(`${API_URL}/groups`, {name: name});
+}
+
+export function addUserToGroup(group_id: number, user_id: number) {
+  return put(`${API_URL}/groups/${group_id}/users/${user_id}`, {});
 }

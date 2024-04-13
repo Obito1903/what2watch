@@ -35,3 +35,8 @@ export {
 	Shortcut as CommandShortcut,
 	Loading as CommandLoading,
 };
+
+
+	export function Button(Button: any) {
+			throw new Error('Function not implemented.');
+		}

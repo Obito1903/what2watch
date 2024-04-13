@@ -16,12 +16,14 @@ func RegisterUsersRoutes(app *fiber.App) {
 	users.Get("/me", GetMe)
 	users.Post("/me", PostMe)
 	users.Delete("/me", DeleteMe)
+	users.Get("/email/:email", GetUserByEmail)
 
 	users.Get("/movies", GetMeMovies)
 	users.Post("/movies/:movie_id", PostMeMovies)
 	users.Delete("/movies/:movie_id", DeleteMeMovies)
 
 	users.Get("/:user_id/movies", GetUserMovies)
+	users.Get("/groups", GetMeGroups)
 
 	users.Get("/recommendations", GetMeRecommenations)
 	users.Get("/:user_id/recommendations/", GetUserRecommendations)
@@ -92,6 +94,25 @@ func DeleteMe(c fiber.Ctx) error {
 	return proxy.Forward(fmt.Sprintf("%s/users/%d", utils.AppConfig.DBApiURL, userId))(c)
 }
 
+func GetUserByEmail(c fiber.Ctx) error {
+    email := c.Params("email")
+
+    ctx := context.Background()
+
+    userResp, err := utils.AppConfig.DBClient.GetUserInfosByMailUsersEmailBymailGetWithResponse(ctx, email)
+    if err != nil {
+        log.Error(err)
+        return c.Status(500).JSON(utils.ApiError{Message: "Error getting user"})
+    }
+
+    if userResp.StatusCode() == 404 {
+        return c.Status(404).JSON(utils.ApiError{Message: "User not found"})
+    }
+
+    return c.JSON(userResp.JSON200)
+}
+
+
 func GetMeMovies(c fiber.Ctx) error {
 	userId, err := utils.CheckAuth(c)
 	if err != nil {
@@ -118,6 +139,15 @@ func DeleteMeMovies(c fiber.Ctx) error {
 
 func GetUserMovies(c fiber.Ctx) error {
 	return utils.AuthProxyWrapper(c, utils.AppConfig.DBApiURL+"/users/"+c.Params("user_id")+"/movies")
+}
+
+func GetMeGroups(c fiber.Ctx) error {
+	userId, err := utils.CheckAuth(c)
+	if err != nil {
+		return c.Status(401).JSON(utils.ApiError{Message: "Unauthorized"})
+	}
+	return proxy.Forward(fmt.Sprintf("%s/users/%d/groups", utils.AppConfig.DBApiURL, userId))(c)
+
 }
 
 func GetMeRecommenations(c fiber.Ctx) error {
