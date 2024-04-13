@@ -56,13 +56,25 @@ app = FastAPI(openapi_tags=tags_metadata)
 # MOVIES
 
 @app.get("/users/{user_id}/movies", status_code=200, tags=["Movies of Users"])
-def get_seen_movies(user_id: int) -> List[str]:
-    c.execute("""SELECT movie_id FROM review WHERE user_id LIKE %s""" % (user_id))
+def get_seen_movies(user_id: int) -> List[MovieReviewsResponseEntry]:
+    c.execute("""SELECT review_id,movie_id,viewed,rating  FROM review WHERE user_id = %s""" % (user_id))
 
     res = c.fetchall()
     if res is None:
         raise HTTPException(status_code=404, detail="Item not found")
-    return res
+    reviews: List[MovieReviewsResponseEntry]
+    reviews = []
+    for r in res:
+        review = MovieReviewsResponseEntry(
+            review_id=r["review_id"],
+            movie_id=r["movie_id"],
+            rating=r["rating"],
+            viewed=r["viewed"]
+        )
+
+        reviews.append(review)
+    print(reviews)
+    return reviews
 
 @app.post("/users/{user_id}/movies/{movie_id}", status_code=200, tags=["Movies of Users"])
 def add_movie_to_watched(user_id: int, movie_id: int, rating: UserPostMovieRequest) -> ApiResponse:
@@ -98,7 +110,7 @@ def get_recommendations(user_id: int) -> List[MovieReccomendationResponse]:
 
 @app.post("/users/{user_id}/recommendations", status_code=200, tags=["Recommendations"])
 def add_recommendations(user_id: int, rec: UserPostRecommendationRequest) -> ApiResponse:
-    sql = "INSERT INTO movie_user_recommendation (accuracy, user_id, movie_id) VALUES (%s, %s, %s, %s)"
+    sql = "INSERT INTO movie_user_recommendation (accuracy, user_id, movie_id) VALUES (%s, %s, %s)"
     values = (rec.accuracy, user_id, rec.movie_id)
 
     c.execute(sql, values)
