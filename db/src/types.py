@@ -7,6 +7,13 @@ class Group(BaseModel):
 class ApiResponse(BaseModel):
     message: str
 
+class MovieReviewsResponseEntry(BaseModel):
+    review_id: int
+    movie_id: int
+    rating: int
+    viewed: bool
+
+
 class MovieReccomendationResponse(BaseModel):
     movie_id: int
     accuracy: float
