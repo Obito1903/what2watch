@@ -4,7 +4,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import * as Card from '$lib/components/ui/card/index';
 	import * as Popover from '$lib/components/ui/popover';
-	activePage.set('movies');
+	activePage.set('mymovies');
 
 	import * as api from '$lib/api';
 	import type { Movie, Movie_Details } from '$lib/types';
@@ -15,10 +15,9 @@
 	import * as RadioGroup from '$lib/components/ui/radio-group';
 	$: isPopoverVisible = false;
 
-	let review : string;
+	let review: string;
 
-	let topMovies: Movie[] = [];
-	let popularMovies: Movie[] = [];
+	let myMovies: Movie[] = [];
 	let searchQuery = '';
 	let selectedMovies: Movie[] = [];
 	let selectedMovie: Movie_Details = {
@@ -31,24 +30,12 @@
 		poster: '' // This field is not present in the API response, adding it manually
 	};
 	$: {
-		api.getTopRatedMovies().then((movies) => {
-			topMovies = movies;
-			selectedMovies = movies;
+		onMount(() => {
+			api.getMyMovies().then((movies) => {
+				myMovies = movies;
+				selectedMovies = movies;
+			});
 		});
-
-		api.getPopularMovies().then((movies) => {
-			popularMovies = movies;
-		});
-	}
-
-	function switchMovies(type: 'popular' | 'topRated') {
-		if (type === 'popular') {
-			selectedMovies = [];
-			selectedMovies = popularMovies;
-		} else {
-			selectedMovies = [];
-			selectedMovies = topMovies;
-		}
 	}
 
 	$: filteredMovies = selectedMovies.filter((movie) =>
@@ -84,15 +71,6 @@
 			<Input placeholder="Search for a movie" bind:value={searchQuery} />
 			<Button type="submit">Search</Button>
 		</form>
-
-		<div class="mt-4 flex justify-center space-x-4">
-			<Button on:click={() => switchMovies('topRated')}>
-				<span>Top Rated</span>
-			</Button>
-			<Button on:click={() => switchMovies('popular')}>
-				<span>Popular</span>
-			</Button>
-		</div>
 
 		<div class="mt-4 grid grid-cols-4 gap-4">
 			{#each filteredMovies as movie, i}
@@ -138,9 +116,7 @@
 								<Badge>{genre.name}</Badge>
 							{/each}
 						</p>
-						<p>
-							Review:
-						</p>
+						<p>Review:</p>
 						<div class="flex items-center space-x-2">
 							<RadioGroup.Root bind:value={review}>
 								<div class="flex items-center space-x-2">

@@ -31,12 +31,26 @@
 	</a>
 
 	<a
+		href="/mymovies"
+		class="hover:text-primary text-sm font-medium transition-colors {$activePage === 'mymovies'
+			? 'text-primary'
+			: 'text-muted-foreground'}"
+	>
+		My Movies
+	</a>
+
+	<a
 		href="/recommendations"
-		class="hover:text-primary text-sm font-medium transition-colors {$activePage === 'recommendations'
+		class="hover:text-primary text-sm font-medium transition-colors {$activePage ===
+		'recommendations'
 			? 'text-primary'
 			: 'text-muted-foreground'}"
 		class:disabled={!loggedIn}
-		on:click={e => {if(!loggedIn) {e.preventDefault();}}}
+		on:click={(e) => {
+			if (!loggedIn) {
+				e.preventDefault();
+			}
+		}}
 	>
 		Recommendations
 	</a>
@@ -47,7 +61,11 @@
 			? 'text-primary'
 			: 'text-muted-foreground'}"
 		class:disabled={!loggedIn}
-		on:click={e => {if(!loggedIn) {e.preventDefault();}}}
+		on:click={(e) => {
+			if (!loggedIn) {
+				e.preventDefault();
+			}
+		}}
 	>
 		Groups
 	</a>

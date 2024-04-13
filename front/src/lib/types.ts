@@ -1,20 +1,23 @@
-// id	238
-// title	"The Godfather"
-// poster	"https://image.tmdb.org/t/p/w300_and_h450_bestv2/3bhkrj58Vtu7enYsRolD1fZdja1.jpg"
-// release_date	"1972-03-14"
-// genres	[]
-
-
 export type Movie = {
-  id: number;
-  title: string;
-  poster: string;
-  release_date: string;
-  genres: string[];
-}
+	id: number;
+	title: string;
+	poster: string;
+	release_date: string;
+	genres: string[];
+};
+
+export type Movie_Details = {
+	id: number;
+	title: string;
+	genres: Array<{ id: number; name: string }>;
+	overview: string;
+	popularity: number;
+	release_date: string;
+  poster: string; // This field is not present in the API response, adding it manually
+};
 
 export type Group = {
-    id: number;
-    name: string;
-    members: string[];
+	id: number;
+	name: string;
+	members: string[];
 };
