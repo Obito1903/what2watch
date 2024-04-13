@@ -39,6 +39,12 @@ export function getMyMovies() {
 
 }
 
+export function deleteMovie(id: number) {
+  return fetch(`${API_URL}/users/movies/${id}`, {
+    method: 'DELETE',
+  }).then((res) => res.json());
+
+}
 // USERS
 export function getMe() {
 	return get(`${API_URL}/users/me`);

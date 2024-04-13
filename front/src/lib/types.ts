@@ -16,6 +16,13 @@ export type Movie_Details = {
   poster: string; // This field is not present in the API response, adding it manually
 };
 
+export type Movie_Review = {
+  movie_id: number;
+  rating: number;
+  review_id: number;
+  viewed: boolean;
+};
+
 export type Group = {
 	id: number;
 	name: string;

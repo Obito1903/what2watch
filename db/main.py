@@ -3,6 +3,7 @@ from fastapi import FastAPI, Response, HTTPException
 import os
 import MySQLdb
 import MySQLdb.cursors
+from fastapi.middleware.cors import CORSMiddleware
 
 from src.types import *
 
@@ -52,6 +53,18 @@ tags_metadata = [
 
 app = FastAPI(openapi_tags=tags_metadata)
 
+origins = [
+    "http://what2watch.localhost",
+    "http://localhost:5173",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 # USERS
 # MOVIES
 
