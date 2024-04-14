@@ -39,8 +39,10 @@ func main() {
 	app := fiber.New()
 	app.Use(cors.New())
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "http://localhost:5173, http://what2watch.localhost",
-		AllowHeaders: "Origin, Content-Type, Accept",
+		AllowOrigins:        "http://localhost:5173, http://what2watch.localhost",
+		AllowHeaders:        "Origin, Content-Type, Accept",
+		AllowCredentials:    true,
+		AllowPrivateNetwork: true,
 	}))
 
 	utils.KeycloakConfig()

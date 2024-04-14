@@ -3,6 +3,7 @@ package utils
 import (
 	"context"
 	"db/pkg/dbapi"
+	"fmt"
 	"os"
 
 	tmdb "github.com/cyruzin/golang-tmdb"
@@ -48,6 +49,8 @@ func AuthProxyWrapper(c fiber.Ctx, addr string) error {
 }
 
 func CheckAuthKeycloak(c fiber.Ctx) (*UserInfo, error) {
+	token := c.Cookies("session-token")
+	fmt.Println(token)
 	return &UserInfo{
 		Sub:               "123",
 		Email:             "test@example.com",
