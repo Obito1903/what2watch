@@ -19,7 +19,6 @@
 
 	let keycloak: Keycloak;
 
-	
 	onMount(async () => {
 		keycloak = new Keycloak({
 			url: 'http://auth.localhost/',
@@ -28,22 +27,24 @@
 		});
 
 		try {
-			const authenticated = await keycloak.init({
-				onLoad: 'login-required',
-			});
-			console.log(`User is ${authenticated ? 'authenticated' : 'not authenticated'}`);
-
-			if (authenticated) {
-				keycloak.updateToken(30).then(() => {
-					console.log('token is ' + keycloak.token);
+			keycloak
+				.init({
+					onLoad: 'login-required'
+				})
+				.then((authenticated) => {
+					console.log(`User is ${authenticated ? 'authenticated' : 'not authenticated'}`);
+					if (authenticated) {
+						keycloak.updateToken(30).then(() => {
+							console.log('token is ' + keycloak.token);
+							kc.set(keycloak);
+						});
+					}
+				})
+				.catch((error) => {
+					console.error('Failed to initialize Keycloak', error);
 				});
-				kc.set(keycloak);
-			}
-
-
-
 		} catch (error) {
-			console.error('Failed to initialize adapter:', error);
+			console.error('Failed to initialize Keycloak', error);
 		}
 	});
 </script>
