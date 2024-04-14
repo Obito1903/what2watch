@@ -3,19 +3,32 @@
 	import * as Card from '$lib/components/ui/card/index';
 	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import type { Group } from '$lib/types';
+	import type { Group, Movie_Details } from '$lib/types';
 	import * as Avatar from '$lib/components/ui/avatar';
 	import { onMount } from 'svelte';
 	import * as api from '$lib/api';
+	import { Badge } from '$lib/components/ui/badge';
+	import * as Popover from '$lib/components/ui/popover';
 
 	activePage.set('recommendations');
 	let myGroups: Group[] = [];
 
-	function getRecommendations(groupId: number) {
-		api.getGroupRecommendations(groupId).then((recommendations) => {
-			console.log(recommendations);
-		});
+	type Recommendation = {
+		movie_id: number;
+		accuracy: number;
+	};
 
+	let recommendations: Map<number, Movie_Details[]> = new Map();
+	let isPopoverVisible = false;
+	let selectedGroupId = -1;
+	async function getRecommendations(groupId: number) {
+		const recs = await api.getGroupRecommendations(groupId);
+		const moviePromises = recs.map((reco) => api.getMovieDetails(reco.movie_id));
+		const movies = await Promise.all(moviePromises);
+
+		recommendations.set(groupId, movies);
+		selectedGroupId = groupId;
+		isPopoverVisible = true;
 	}
 
 	onMount(async () => {
@@ -80,6 +93,15 @@
 								</Card.Content>
 							</Card.Root>
 
+							
+							<Button on:click={() => {
+								api.refreshGroupRecommendations(group.id).then(() => {
+									console.log('refreshed recommendations');
+								});
+							}}>
+								Refresh recommendations
+							</Button>
+
 							<Button on:click={() => getRecommendations(group.id)} variant="default"
 								>Get recommendations</Button
 							>
@@ -88,5 +110,55 @@
 				{/each}
 			</div>
 		</ScrollArea>
+
+		
 	</Card.Content>
 </Card.Root>
+
+<div class="PopoverAnchor">
+	<Popover.Root bind:open={isPopoverVisible}>
+		<Popover.Trigger />
+		<Popover.Content class="w-100">
+			{#if recommendations.get(selectedGroupId) != undefined}
+				<p>No recommendations yet, press refresh to get recommendations</p>
+			{/if}
+			{#each recommendations.get(selectedGroupId) ?? [] as movie}
+					<div class="flex p-4">
+						<img src={movie.poster} alt={movie.title} class="mr-4" />
+						<div>
+							<h2 class="text-2xl font-bold">{movie.title}</h2>
+							<p class="mt-2">
+								Release Date: <span class="text-muted-foreground">
+									{movie.release_date}</span
+								>
+							</p>
+							<p class="mt-2">
+								Popularity: <span class="text-muted-foreground">{movie.popularity}</span>
+							</p>
+							<p class="mt-2">
+								Overview: <span class="text-muted-foreground">{movie.overview}</span>
+							</p>
+							<p class="mt-2">
+								Genres:
+								{#each movie.genres as genre}
+									<Badge>{genre.name}</Badge>
+								{/each}
+							</p>
+						</div>
+					</div>
+			{/each}
+		</Popover.Content>
+	</Popover.Root>
+</div>
+
+<style>
+	.PopoverAnchor {
+		position: fixed;
+		top: 10%;
+		left: 10%;
+		width: 100%;
+		height: 100%;
+		z-index: 100;
+		pointer-events: none;
+	}
+</style>
