@@ -7,7 +7,6 @@
 	import { activePage } from '$lib/stores';
 	import { page } from '$app/stores';
 
-	$: loggedIn = $page.data.session?.user;
 </script>
 
 <nav class={cn('flex items-center space-x-4 lg:space-x-6', className)}>
@@ -45,12 +44,6 @@
 		'recommendations'
 			? 'text-primary'
 			: 'text-muted-foreground'}"
-		class:disabled={!loggedIn}
-		on:click={(e) => {
-			if (!loggedIn) {
-				e.preventDefault();
-			}
-		}}
 	>
 		Recommendations
 	</a>
@@ -60,12 +53,6 @@
 		class="hover:text-primary text-sm font-medium transition-colors {$activePage === 'groups'
 			? 'text-primary'
 			: 'text-muted-foreground'}"
-		class:disabled={!loggedIn}
-		on:click={(e) => {
-			if (!loggedIn) {
-				e.preventDefault();
-			}
-		}}
 	>
 		Groups
 	</a>
@@ -80,9 +67,3 @@
 	</a>
 </nav>
 
-<style>
-	.disabled {
-		pointer-events: none;
-		opacity: 0.5;
-	}
-</style>

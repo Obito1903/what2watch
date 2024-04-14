@@ -8,31 +8,48 @@
 	import { SignOut } from '@auth/sveltekit/components';
 	import { onMount } from 'svelte';
 	import { createUserInDB } from '$lib/user/user';
+	import { kc } from '$lib/stores';
+	import Keycloak from 'keycloak-js';
 
+	let username = '';
+	let email = '';
 	onMount(() =>  {
-		if($page.data.session?.user)
-		{
-			createUserInDB();
-		}
+		kc.subscribe((value) => {
+			if(value != undefined)
+			{
+				let keycloak = value as Keycloak;
+				email = keycloak.profile?.email ?? '';
+				username = keycloak.profile?.username ?? '';
+				keycloak.loadUserInfo().then((userInfo) => {
+					username = userInfo.preferred_username;
+					email = userInfo.email;
+				});	
+
+				createUserInDB();
+
+			}
+		});
+		// if($page.data.session?.user)
+		// {
+		// 
+		// }
 	});
 </script>
-{#if !$page.data.session?.user}
-<Button on:click={() => signIn()}>Sign in</Button>
-{:else}
+
 <DropdownMenu.Root>
 	<DropdownMenu.Trigger asChild let:builder>
 		<Button variant="ghost" builders={[builder]} class="relative h-8 w-8 rounded-full">
 			<Avatar.Root class="h-8 w-8">
 				<Avatar.Image src="/avatars/01.png" alt="avatar" />
-				<Avatar.Fallback>{$page.data?.session?.user?.name[0]}</Avatar.Fallback>
+				<Avatar.Fallback>{username[0]}</Avatar.Fallback>
 			</Avatar.Root>
 		</Button>
 	</DropdownMenu.Trigger>
 	<DropdownMenu.Content class="w-56" align="end">
 		<DropdownMenu.Label class="font-normal">
 			<div class="flex flex-col space-y-1">
-				<p class="text-sm font-medium leading-none">{$page.data.session?.user?.name}</p>
-				<p class="text-muted-foreground text-xs leading-none">{$page.data.session?.user?.email}</p>
+				<p class="text-sm font-medium leading-none">{username}</p>
+				<p class="text-muted-foreground text-xs leading-none">{email}</p>
 			</div>
 		</DropdownMenu.Label>
 		<DropdownMenu.Separator />
@@ -54,4 +71,3 @@
 	</DropdownMenu.Content>
 </DropdownMenu.Root>
 
-{/if}

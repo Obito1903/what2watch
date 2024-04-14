@@ -11,6 +11,6 @@
 		<Card.Title class="text-5xl font-medium">Welcome to what2watch</Card.Title>
 	</Card.Header>
 	<Card.Content>
-		Lorem ipsum dolor sit amet consectetur adipisicing elit. Rem similique sint explicabo eius illum nulla quasi et mollitia quod natus impedit odit dignissimos hic pariatur quas animi, dolorum doloribus commodi?
+		In this web app you can create groups with your friends and get movie recommendations based on your tastes.
 	</Card.Content>
 </Card.Root>

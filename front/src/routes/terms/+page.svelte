@@ -10,6 +10,6 @@
 		<Card.Title class="text-5xl font-medium">Terms and conditions</Card.Title>
 	</Card.Header>
 	<Card.Content>
-		Lorem ipsum dolor sit amet consectetur adipisicing elit. Rem similique sint explicabo eius illum nulla quasi et mollitia quod natus impedit odit dignissimos hic pariatur quas animi, dolorum doloribus commodi?
+		Very serious terms and conditions.
 	</Card.Content>
 </Card.Root>

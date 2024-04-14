@@ -1,13 +1,21 @@
+import { kc } from '$lib/stores';
 export const API_URL = 'http://api.localhost';
 
+
 export function get(url: string) {
-	return fetch(url).then((res) => res.json());
+  return fetch(url, {
+    headers: {
+      Authorization: `Bearer ${kc.token}`,
+      'Content-Type': 'application/json'
+    }
+  }).then((res) => res.json());
 }
 
 export function post(url: string, data: any) {
   return fetch(url, {
     method: 'POST',
     headers: {
+      Authorization: `Bearer ${kc.token}`,
       'Content-Type': 'application/json'
     },
     body: JSON.stringify(data),
@@ -18,6 +26,7 @@ export function put(url: string, data: any) {
   return fetch(url, {
     method: 'PUT',
     headers: {
+      Authorization: `Bearer ${kc.token}`,
       'Content-Type': 'application/json'
     },
     body: JSON.stringify(data),
