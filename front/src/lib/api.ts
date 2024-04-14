@@ -59,7 +59,7 @@ export function addToMyMovies(id: number, rating: number) {
     });
 }
 export function refreshGroupRecommendations(group_id: number) {
-  return post(`${API_URL}/groups/${group_id}/refresh_recommendations`, {});
+  return get(`${API_URL}/groups/${group_id}/refresh_recommendations`);
 }
 export function getMyMovies() {
   return get(`${API_URL}/users/movies`);

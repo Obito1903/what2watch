@@ -23,6 +23,7 @@
 	let selectedGroupId = -1;
 	async function getRecommendations(groupId: number) {
 		const recs = await api.getGroupRecommendations(groupId);
+		console.log(recs);
 		const moviePromises = recs.map((reco) => api.getMovieDetails(reco.movie_id));
 		const movies = await Promise.all(moviePromises);
 
