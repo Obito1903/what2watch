@@ -5,16 +5,41 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import type { Group } from '$lib/types';
 	import * as Avatar from '$lib/components/ui/avatar';
+	import { onMount } from 'svelte';
+	import * as api from '$lib/api';
 
 	activePage.set('recommendations');
-	let myGroups: Group[] = [
-		{ id: 1, name: 'les foufous de socheau', members: ['Titou', 'Paul'] },
-		{ id: 2, name: 'Eistiens', members: ['Samuel', 'Quentin', 'Melody', 'Nathan'] }
-	];
+	let myGroups: Group[] = [];
 
 	function getRecommendations(groupId: number) {
+
 		console.log('Getting recommendations');
+
 	}
+
+	onMount(async () => {
+		const groups = await api.getGroups();
+		console.log(groups);
+
+		const updatedGroups = await Promise.all(
+			groups.map(async (group) => {
+				const members = await api.getGroupMembers(group.group_id);
+				// console.log(members);
+
+				const gpmembers = await Promise.all(
+					members.map(async (member) => {
+						const user = await api.getUserByID(member);
+						// console.log("got user : " + JSON.stringify(user));
+						return user.name;
+					})
+				);
+
+				return { id: group.group_id, name: group.group_name, members: gpmembers };
+			})
+		);
+
+		myGroups = [...myGroups, ...updatedGroups];
+	});
 </script>
 
 <Card.Root>
@@ -54,7 +79,9 @@
 								</Card.Content>
 							</Card.Root>
 
-							<Button on:click={() => getRecommendations(group.id)} variant="default">Get recommendations</Button>
+							<Button on:click={() => getRecommendations(group.id)} variant="default"
+								>Get recommendations</Button
+							>
 						</Card.Content>
 					</Card.Root>
 				{/each}

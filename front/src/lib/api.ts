@@ -71,7 +71,7 @@ export function getUserByEmail(email: string) {
 }
 
 export function getUserByID(id: number) {
-  return get(`${API_URL}/users/${id}`);
+  return get(`${API_URL}/users/id/${id}`);
 }
 //GROUPS
 export function getGroups() {
@@ -92,4 +92,11 @@ export function createGroup(name: string) {
 
 export function addUserToGroup(group_id: number, user_id: number) {
   return put(`${API_URL}/groups/${group_id}/users/${user_id}`, {});
+}
+
+export function deleteUserFromGroup(group_id: number, user_id: number) {
+  return fetch(`${API_URL}/groups/${group_id}/users/${user_id}`, {
+    method: 'DELETE',
+  }).then((res) => res.json());
+
 }

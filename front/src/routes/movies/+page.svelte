@@ -170,6 +170,7 @@
 							class="mt-4"
 							on:click={() => {
 								addMovie(selectedMovie, Number(review));
+								isPopoverVisible = false;
 							}}>Add to my movies</Button
 						>
 					</div>

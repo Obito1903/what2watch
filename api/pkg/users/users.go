@@ -2,6 +2,7 @@ package users
 
 import (
 	"context"
+	"strconv"
 	"db/pkg/dbapi"
 	"db/pkg/utils"
 	"fmt"
@@ -17,6 +18,7 @@ func RegisterUsersRoutes(app *fiber.App) {
 	users.Post("/me", PostMe)
 	users.Delete("/me", DeleteMe)
 	users.Get("/email/:email", GetUserByEmail)
+	users.Get("/id/:user_id", GetUserByID)
 
 	users.Get("/movies", GetMeMovies)
 	users.Post("/movies/:movie_id", PostMeMovies)
@@ -107,6 +109,32 @@ func GetUserByEmail(c fiber.Ctx) error {
 
     if userResp.StatusCode() == 404 {
         return c.Status(404).JSON(utils.ApiError{Message: "User not found"})
+    }
+
+    return c.JSON(userResp.JSON200)
+}
+
+func GetUserByID(c fiber.Ctx) error {
+    userIdStr := c.Params("user_id")
+    userId, err := strconv.Atoi(userIdStr)
+    if err != nil {
+        return c.Status(400).JSON(fiber.Map{"error": "Invalid user ID"})
+    }
+
+    _, err = utils.CheckAuth(c)
+    if err != nil {
+        return c.Status(401).JSON(fiber.Map{"error": "Unauthorized"})
+    }
+
+    ctx := context.Background()
+    userResp, err := utils.AppConfig.DBClient.GetUserInfosUsersUserIdGetWithResponse(ctx, userId)
+    if err != nil {
+        log.Error(err)
+        return c.Status(500).JSON(fiber.Map{"error": "Error getting user"})
+    }
+
+    if userResp.StatusCode() == 404 {
+        return c.Status(404).JSON(fiber.Map{"error": "User not found"})
     }
 
     return c.JSON(userResp.JSON200)

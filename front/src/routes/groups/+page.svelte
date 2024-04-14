@@ -13,15 +13,18 @@
 
 	activePage.set('groups');
 	let myGroups: Group[] = [
-		{ id: 1, name: 'les foufous de socheau', members: ['Titou', 'Paul'] },
-		{ id: 2, name: 'Eistiens', members: ['Samuel', 'Quentin', 'Melody', 'Nathan'] }
+		
 	];
 
 	let selectedGroupIdToAddMember: number = -1;
 	let groupName = '';
 	let emailInput = '';
 	function leaveGroup(groupID: number) {
-		myGroups = myGroups.filter((g) => g.id != groupID);
+		api.getMe().then((me) => {
+			api.deleteUserFromGroup(groupID, me.user_id).then(() => {
+				myGroups = myGroups.filter((g) => g.id != groupID);
+			});
+		});
 	}
 
 	function deleteMember(member: string, groupId: number) {
@@ -66,28 +69,35 @@
 			api.getMe().then((me) => {
 				api.addUserToGroup(groupId, me.user_id).then(() => {
 					myGroups = myGroups.map((group) =>
-						group.id === groupId ? group = { ...group, members: [me.name] } : group
+						group.id === groupId ? (group = { ...group, members: [me.name] }) : group
 					);
 					console.log('User added to group');
 				});
 			});
 		});
 	}
-	onMount(() => {
-		api.getGroups().then((groups) => {
-	
-			// for (let group of groups) {
-			// 	let gpmembers: string[] = [];
-			// 	api.getGroupMembers(group.group_id).then((members) => {
-			// 		members.forEach(member => {
-			// 			api.getUserByID(member.user_id).then((user) => {
-			// 				gpmembers.push(user.name);
-			// 			});
-			// 		});
-			// 		myGroups = [...myGroups, { id: group.group_id, name: group.name, members: gpmembers }];
-			// 	});
-			// }
-		});
+	onMount(async () => {
+		const groups = await api.getGroups();
+		// console.log(groups);
+
+		const updatedGroups = await Promise.all(
+			groups.map(async (group) => {
+				const members = await api.getGroupMembers(group.group_id);
+				// console.log(members);
+
+				const gpmembers = await Promise.all(
+					members.map(async (member) => {
+						const user = await api.getUserByID(member);
+						// console.log("got user : " + JSON.stringify(user));
+						return user.name;
+					})
+				);
+
+				return { id: group.group_id, name: group.group_name, members: gpmembers };
+			})
+		);
+
+		myGroups = [...myGroups, ...updatedGroups];
 	});
 </script>
 
@@ -145,10 +155,17 @@
 										}}>Add someone to this group</Button
 									>
 								</Popover.Trigger>
-								<Popover.Content class="p-5 m-5" align="end">
+								<Popover.Content class="m-5 p-5" align="end">
 									<Command.Root loop>
-										<Command.Input bind:value={emailInput} placeholder="Enter the mail address of the user to add to the group..." />
-										<Button on:click={() => {addMemberByEmail(emailInput)}}>Add to the group</Button>
+										<Command.Input
+											bind:value={emailInput}
+											placeholder="Enter the mail address of the user to add to the group..."
+										/>
+										<Button
+											on:click={() => {
+												addMemberByEmail(emailInput);
+											}}>Add to the group</Button
+										>
 									</Command.Root>
 								</Popover.Content>
 							</Popover.Root>
