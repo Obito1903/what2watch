@@ -64,6 +64,10 @@ func CheckAuthKeycloak(c fiber.Ctx) (*UserInfo, error) {
 		log.Error(fmt.Sprintf("Error creating request:\n%v", err))
 		return nil, errors.New("error creating request")
 	}
+	if c.Get("Authorization") == "" {
+		log.Error("No Authorization header")
+		return nil, errors.New("no Authorization header")
+	}
 	token := c.Get("Authorization")[7:]
 	req.Header.Set("Authorization", "Bearer "+token)
 	// req.Header.Add("Authorization", c.Get("Authorization"))
