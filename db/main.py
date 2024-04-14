@@ -138,12 +138,13 @@ def add_recommendations(user_id: int, rec: UserPostRecommendationRequest) -> Api
 
 @app.get("/users/{user_id}/tastes", status_code=200, tags=["Tastes of Users"])
 def get_tastes(user_id: int) -> List[GenreResponse]:
-    c.execute("""SELECT genre_name FROM genre, user_genre_preferences WHERE user_genre_preferences.user_id LIKE %s AND genre.genre_id = user_genre_preferences.genre_id""" % (user_id))
+    c.execute("""SELECT genre.genre_id, genre.genre_name FROM genre, user_genre_preferences WHERE user_genre_preferences.user_id LIKE %s AND genre.genre_id = user_genre_preferences.genre_id""" % (user_id))
 
     res = c.fetchall()
     if res is None:
         raise HTTPException(status_code=404, detail="Item not found")
-    return res
+    adjusted_data = [{"genre_id": item["genre_id"], "name": item["genre_name"]} for item in res]
+    return adjusted_data
 
 @app.put("/users/{user_id}/tastes/{genre_id}", status_code=200, tags=["Tastes of Users"])
 def add_taste_for_user(user_id: int, genre_id: int) -> ApiResponse:
@@ -285,7 +286,7 @@ def remove_user_from_group(group_id: int, user_id: int) -> ApiResponse:
 
 @app.get("/groups/{group_id}/recommendations", status_code=200, tags=["Recommendations"])
 def get_group_recommendations(group_id: int) -> List[MovieReccomendationResponse]:
-    c.execute("""SELECT (movie_id,accuracy) FROM movie_group_recommendation WHERE group_id LIKE %s""" % (group_id))
+    c.execute("""SELECT movie_id,accuracy FROM movie_group_recommendation WHERE group_id LIKE %s""" % (group_id))
 
     res = c.fetchall()
     if res is None:

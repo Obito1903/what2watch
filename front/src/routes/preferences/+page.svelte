@@ -6,46 +6,40 @@
 	import { default as Search } from '$lib/nav/search.svelte';
 	import * as Command from '$lib/components/ui/command';
 	import * as Popover from '$lib/components/ui/popover';
-
+	import { onMount } from 'svelte';
+	import * as api from '$lib/api';
 	activePage.set('preferences');
 
 	// ----------------- Genres -----------------
-	const genres = [
-		'Action',
-		'Comedy',
-		'Drama',
-		'Thriller',
-		'Sci-Fi',
-		'Fantasy',
-		'Horror',
-		'Romance',
-		'Mystery',
-		'Crime',
-		'Adventure',
-		'Animation',
-		'Family',
-		'War',
-		'History',
-		'Documentary',
-		'Music',
-		'Western'
-	];
 
-	let myGenres = ['Action', 'Comedy', 'Drama'];
+	type Genre = {
+		id: number;
+		name: string;
+	};
+	let genres: Genre[] = [];
+
+	let myGenres: Genre[] = [];
 
 	let addGenrePopoverOpen = false;
 
-	function submitGenre(genre: string) {
+	function submitGenre(genre: Genre) {
 		if (myGenres.includes(genre)) {
 			return;
 		}
 
-		myGenres = [...myGenres, genre];
-		addGenrePopoverOpen = false;
+		api.addTasteToUser(genre.id).then(() => {
+			console.log('Genre added to user');
+
+			myGenres = [...myGenres, genre];
+			addGenrePopoverOpen = false;
+		});
 	}
 
-	function removeGenre(genre: string) {
-		myGenres = myGenres.filter((g) => g !== genre);
+	function removeGenre(genre: Genre) {
+		console.log(genre);
+		api.deleteTasteFromUser(genre.id).then(() => {
+			myGenres = myGenres.filter((g) => g.id !== genre.id);
+		});
 	}
 
 	// ----------------- Languages -----------------
@@ -66,7 +60,22 @@
 	function removeLanguage(language: string) {
 		myLanguages = myLanguages.filter((g) => g !== language);
 	}
+	// ----------------- Fetching data -----------------
+	onMount(() => {
+		// fetch genres
+		api.getMovieGenres().then((allGenres) => {
+			allGenres.forEach((genre) => {
+				genres.push({ id: genre.id, name: genre.name });
+			});
+		});
 
+		// fetch user tastes
+		api.getUserTastes().then((tastes) => {
+			tastes.forEach((genre) => {
+				myGenres = [...myGenres, { id: genre.genre_id, name: genre.name }];
+			});
+		});
+	});
 </script>
 
 <Card.Root>
@@ -82,10 +91,10 @@
 				<Command.Root loop>
 					<Command.Input placeholder="Select genre..." />
 					<Command.List>
-						{#each genres as genre}
+						{#each genres.filter((genre) => !myGenres.some((myGenre) => myGenre.id === genre.id)) as genre}
 							<Command.Item class="flex flex-col items-start space-y-1 px-4 py-2">
 								<Button class="m-0 w-full p-0" variant="ghost" on:click={() => submitGenre(genre)}
-									>{genre}</Button
+									>{genre.name}</Button
 								>
 							</Command.Item>
 						{/each}
@@ -102,7 +111,7 @@
 				{#each myGenres as genre}
 					<Card.Root class="w-96">
 						<Card.Header class="flex flex-row items-center justify-between space-y-0 pb-2">
-							<Card.Title class="text-2xl text-sm font-medium">{genre}</Card.Title>
+							<Card.Title class="text-2xl text-sm font-medium">{genre.name}</Card.Title>
 						</Card.Header>
 						<Card.Content>
 							<Button on:click={() => removeGenre(genre)} variant="destructive">Remove</Button>
@@ -113,7 +122,6 @@
 		</ScrollArea>
 	</Card.Content>
 </Card.Root>
-
 
 <Card.Root>
 	<Card.Header class="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -130,8 +138,10 @@
 					<Command.List>
 						{#each Languages as language}
 							<Command.Item class="flex flex-col items-start space-y-1 px-4 py-2">
-								<Button class="m-0 w-full p-0" variant="ghost" on:click={() => submitLanguage(language)}
-									>{language}</Button
+								<Button
+									class="m-0 w-full p-0"
+									variant="ghost"
+									on:click={() => submitLanguage(language)}>{language}</Button
 								>
 							</Command.Item>
 						{/each}
@@ -151,7 +161,8 @@
 							<Card.Title class="text-2xl text-sm font-medium">{language}</Card.Title>
 						</Card.Header>
 						<Card.Content>
-							<Button on:click={() => removeLanguage(language)} variant="destructive">Remove</Button>
+							<Button on:click={() => removeLanguage(language)} variant="destructive">Remove</Button
+							>
 						</Card.Content>
 					</Card.Root>
 				{/each}

@@ -12,8 +12,9 @@
 	let myGroups: Group[] = [];
 
 	function getRecommendations(groupId: number) {
-
-		console.log('Getting recommendations');
+		api.getGroupRecommendations(groupId).then((recommendations) => {
+			console.log(recommendations);
+		});
 
 	}
 

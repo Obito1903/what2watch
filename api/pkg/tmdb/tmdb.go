@@ -18,6 +18,7 @@ func RegisterTmdbRoutes(app *fiber.App) {
 	tmdb.Get("/movies/popular", GetMoviesPopular)
 	tmdb.Get("/movies/:movie_id/details", GetMovieDetails)
 	tmdb.Get("/search", GetSearchMovie)
+	tmdb.Get("/genres", GetGenres)
 }
 
 func GetMoviesTopRated(c fiber.Ctx) error {
@@ -75,4 +76,21 @@ func GetMovieDetails(c fiber.Ctx) error {
 	}
 
 	return c.JSON(movie)
+}
+
+func GetGenres(c fiber.Ctx) error {
+    res, err := tmdbClient.GetGenreMovieList(map[string]string{"language": "en-US"})
+    if err != nil {
+        return c.Status(500).JSON(utils.ApiError{Message: "Error getting genres"})
+    }
+
+    genres := []Genre{}
+    for _, genre := range res.Genres {
+        genres = append(genres, Genre{
+            ID:   genre.ID,
+            Name: genre.Name,
+        })
+    }
+
+    return c.JSON(genres)
 }

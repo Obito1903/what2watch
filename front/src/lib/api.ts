@@ -56,6 +56,10 @@ export function deleteMovie(id: number) {
   }).then((res) => res.json());
 
 }
+
+export function getMovieGenres() {
+  return get(`${API_URL}/tmdb/genres`);
+}
 // USERS
 export function getMe() {
 	return get(`${API_URL}/users/me`);
@@ -72,6 +76,19 @@ export function getUserByEmail(email: string) {
 
 export function getUserByID(id: number) {
   return get(`${API_URL}/users/id/${id}`);
+}
+
+export function getUserTastes() {
+  return get(`${API_URL}/users/tastes`);
+}
+export function addTasteToUser(genreID: number) {
+  return put(`${API_URL}/users/tastes/${genreID}`, {});
+}
+
+export function deleteTasteFromUser(genreID: number) {
+  return fetch(`${API_URL}/users/tastes/${genreID}`, {
+    method: 'DELETE',
+  }).then((res) => res.json());
 }
 //GROUPS
 export function getGroups() {
@@ -98,5 +115,8 @@ export function deleteUserFromGroup(group_id: number, user_id: number) {
   return fetch(`${API_URL}/groups/${group_id}/users/${user_id}`, {
     method: 'DELETE',
   }).then((res) => res.json());
+}
 
+export function getGroupRecommendations(group_id : number) {
+  return get(`${API_URL}/groups/${group_id}/recommendations`);
 }
