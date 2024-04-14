@@ -10,9 +10,11 @@ services:
     restart: unless-stopped
     depends_on:
       - db-api
+      - engine
     environment:
       AUTH_URL: http://keycloak:8080/realms/what2watch/protocol/openid-connect/userinfo
       DB_API_URL: http://db-api:8000
+      ENGINE_API_URL: http://engine:8000
       TMDB_API_KEY: ${TMDB_API_KEY:-}
     labels:
       - traefik.enable=true
@@ -22,6 +24,26 @@ services:
       watch:
         - action: rebuild
           path: ./api
+          target: /app
+  engine:
+    build:
+      context: ./engine
+      dockerfile: Dockerfile
+    container_name: engine
+    restart: unless-stopped
+    depends_on:
+      - db-api
+    environment:
+      DB_API_URL: http://db-api:8000
+      TMDB_API_KEY: ${TMDB_API_KEY:-}
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.engine.rule=Host(`engine.${DOMAIN:-localhost}`)
+      - traefik.http.routers.engine.entrypoints=web,websecure
+    develop:
+      watch:
+        - action: rebuild
+          path: ./engine
           target: /app
   db-api:
     build:
@@ -41,23 +63,23 @@ services:
       - traefik.enable=true
       - traefik.http.routers.db-api.rule=Host(`db-api.${DOMAIN:-localhost}`)
       - traefik.http.routers.db-api.entrypoints=web,websecure
-  # front:
-  #   build:
-  #     context: ./front
-  #     dockerfile: Dockerfile
-  #   container_name: front
-  #   restart: unless-stopped
-  #   environment:
-  #     API_URL: http://api.localhost
-  #     AUTH_URL: ${AUTH_URL:-http://auth.localhost/realms/what2watch/protocol/openid-connect/userinfo}
-  #     AUTH_KEYCLOAK_ISSUER: ${AUTH_KEYCLOAK_ISSUER:-http://auth.localhost/realms/what2watch}
-  #     AUTH_KEYCLOAK_ID: ${AUTH_KEYCLOAK_ID:-what2watch}
-  #     AUTH_KEYCLOAK_SECRET: ${AUTH_KEYCLOAK_SECRET:-IeTnynMXDBFfUNvKTiOTUzXblrjEk7Sd}
-  #     AUTH_SECRET: ${AUTH_SECRET:-Zts8AYz9Xm4SzqEhjHO/pRQv7tEsqgkCCong4ByHQcY=}
-  #   labels:
-  #     - traefik.enable=true
-  #     - traefik.http.routers.front.rule=Host(`what2watch.${DOMAIN:-localhost}`)
-  #     - traefik.http.routers.front.entrypoints=web,websecure
+    # front:
+    #   build:
+    #     context: ./front
+    #     dockerfile: Dockerfile
+    #   container_name: front
+    #   restart: unless-stopped
+    #   environment:
+    #     API_URL: http://api.localhost
+    #     AUTH_URL: ${AUTH_URL:-http://auth.localhost/realms/what2watch/protocol/openid-connect/userinfo}
+    #     AUTH_KEYCLOAK_ISSUER: ${AUTH_KEYCLOAK_ISSUER:-http://auth.localhost/realms/what2watch}
+    #     AUTH_KEYCLOAK_ID: ${AUTH_KEYCLOAK_ID:-what2watch}
+    #     AUTH_KEYCLOAK_SECRET: ${AUTH_KEYCLOAK_SECRET:-IeTnynMXDBFfUNvKTiOTUzXblrjEk7Sd}
+    #     AUTH_SECRET: ${AUTH_SECRET:-Zts8AYz9Xm4SzqEhjHO/pRQv7tEsqgkCCong4ByHQcY=}
+    #   labels:
+    #     - traefik.enable=true
+    #     - traefik.http.routers.front.rule=Host(`what2watch.${DOMAIN:-localhost}`)
+    #     - traefik.http.routers.front.entrypoints=web,websecure
     develop:
       watch:
         - action: sync

@@ -15,7 +15,6 @@ import (
 	"github.com/gofiber/fiber/v3/log"
 	"github.com/gofiber/fiber/v3/middleware/proxy"
 	"github.com/joho/godotenv"
-	"golang.org/x/oauth2"
 )
 
 type ApiError struct {
@@ -60,12 +59,14 @@ func CheckAuthKeycloak(c fiber.Ctx) (*UserInfo, error) {
 	// 	Email:             "test@example.com",
 	// 	PreferredUsername: "test",
 	// }, nil
-	req, err := http.NewRequest("GET", "http://auth.localhost/realms/what2watch/protocol/openid-connect/userinfo", nil)
+	req, err := http.NewRequest("GET", AppConfig.AuthURL, nil)
 	if err != nil {
 		log.Error(fmt.Sprintf("Error creating request:\n%v", err))
 		return nil, errors.New("error creating request")
 	}
-	req.Header.Add("Authorization", c.Get("Authorization"))
+	token := c.Get("Authorization")[7:]
+	req.Header.Set("Authorization", "Bearer "+token)
+	// req.Header.Add("Authorization", c.Get("Authorization"))
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		log.Error(fmt.Sprintf("Error sending request:\n%v", err))
@@ -73,6 +74,8 @@ func CheckAuthKeycloak(c fiber.Ctx) (*UserInfo, error) {
 	}
 	if res.StatusCode != 200 {
 		log.Error(fmt.Sprintf("Error validating token: %v", res.Status))
+		body, _ := io.ReadAll(res.Body)
+		fmt.Println(body)
 		return nil, errors.New("error validating token")
 	}
 	body, err := io.ReadAll(res.Body)
@@ -89,30 +92,21 @@ func CheckAuthKeycloak(c fiber.Ctx) (*UserInfo, error) {
 }
 
 type Config struct {
-	LoginConfig oauth2.Config
-	DBApiURL    string
-	DBClient    *dbapi.ClientWithResponses
-	TmdbClient  *tmdb.Client
+	AuthURL    string
+	DBApiURL   string
+	EngineUrl  string
+	DBClient   *dbapi.ClientWithResponses
+	TmdbClient *tmdb.Client
 }
 
 var AppConfig Config
 
-func KeycloakConfig() oauth2.Config {
+func KeycloakConfig() string {
 	godotenv.Load(".env")
 
-	AppConfig.LoginConfig = oauth2.Config{
-		RedirectURL:  "http://localhost:3000/callback",
-		ClientID:     os.Getenv("KEYCLOAK_CLIENT_ID"),
-		ClientSecret: os.Getenv("KEYCLOAK_CLIENT_SECRET"),
-		Scopes:       []string{"openid", "profile", "email"},
-		Endpoint: oauth2.Endpoint{
-			AuthURL:   os.Getenv("KEYCLOAK_AUTH_URL"),
-			TokenURL:  os.Getenv("KEYCLOAK_TOKEN_URL"),
-			AuthStyle: oauth2.AuthStyleAutoDetect,
-		},
-	}
+	AppConfig.AuthURL = os.Getenv("AUTH_URL")
 
-	return AppConfig.LoginConfig
+	return AppConfig.AuthURL
 }
 
 func DBApiConfig() string {
@@ -136,4 +130,10 @@ func TmdbConfig() *tmdb.Client {
 		log.Fatalf("Error creating client: %s", err)
 	}
 	return AppConfig.TmdbClient
+}
+
+func EngineConfig() string {
+	godotenv.Load(".env")
+	AppConfig.EngineUrl = os.Getenv("ENGINE_URL")
+	return AppConfig.EngineUrl
 }

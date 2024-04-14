@@ -41,10 +41,10 @@ def read_root():
     return {"Hello": "World"}
 
 
-@app.get("/queue/add/user")
-def queue_add_group(user: UserRequest, tasks: BackgroundTasks):
-    tasks.add_task(create_user_recommendation, user.user_id)
-    return {"group": user.user_id}
+@app.get("/queue/add/user/:user_id")
+def queue_add_group(user_id: int, tasks: BackgroundTasks):
+    tasks.add_task(create_user_recommendation, user_id)
+    return {"group": user_id}
 
 def create_user_recommendation(user_id: int):
     # Get list of movies liked by user
@@ -72,10 +72,10 @@ def create_user_recommendation(user_id: int):
         print(rec)
         requests.post(DBApi + "/users/" + str(user_id) + "/recommendations", json={"movie_id": rec.movie_id, "accuracy": rec.score})
 
-@app.get("/queue/add/group")
-def queue_add_group(group: GroupRequest, tasks: BackgroundTasks):
-    tasks.add_task(create_group_recommendation, group.group_id)
-    return {"group": group.group_id}
+@app.get("/queue/add/group/:group_id")
+def queue_add_group(group_id: int, tasks: BackgroundTasks):
+    tasks.add_task(create_group_recommendation, group_id)
+    return {"group": group_id}
 
 def create_group_recommendation(group_id: int):
     # Get list of users in group

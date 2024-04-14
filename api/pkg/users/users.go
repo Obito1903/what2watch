@@ -2,10 +2,11 @@ package users
 
 import (
 	"context"
-	"strconv"
 	"db/pkg/dbapi"
 	"db/pkg/utils"
 	"fmt"
+	"net/http"
+	"strconv"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/log"
@@ -97,49 +98,48 @@ func DeleteMe(c fiber.Ctx) error {
 }
 
 func GetUserByEmail(c fiber.Ctx) error {
-    email := c.Params("email")
+	email := c.Params("email")
 
-    ctx := context.Background()
+	ctx := context.Background()
 
-    userResp, err := utils.AppConfig.DBClient.GetUserInfosByMailUsersEmailBymailGetWithResponse(ctx, email)
-    if err != nil {
-        log.Error(err)
-        return c.Status(500).JSON(utils.ApiError{Message: "Error getting user"})
-    }
+	userResp, err := utils.AppConfig.DBClient.GetUserInfosByMailUsersEmailBymailGetWithResponse(ctx, email)
+	if err != nil {
+		log.Error(err)
+		return c.Status(500).JSON(utils.ApiError{Message: "Error getting user"})
+	}
 
-    if userResp.StatusCode() == 404 {
-        return c.Status(404).JSON(utils.ApiError{Message: "User not found"})
-    }
+	if userResp.StatusCode() == 404 {
+		return c.Status(404).JSON(utils.ApiError{Message: "User not found"})
+	}
 
-    return c.JSON(userResp.JSON200)
+	return c.JSON(userResp.JSON200)
 }
 
 func GetUserByID(c fiber.Ctx) error {
-    userIdStr := c.Params("user_id")
-    userId, err := strconv.Atoi(userIdStr)
-    if err != nil {
-        return c.Status(400).JSON(fiber.Map{"error": "Invalid user ID"})
-    }
+	userIdStr := c.Params("user_id")
+	userId, err := strconv.Atoi(userIdStr)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "Invalid user ID"})
+	}
 
-    _, err = utils.CheckAuth(c)
-    if err != nil {
-        return c.Status(401).JSON(fiber.Map{"error": "Unauthorized"})
-    }
+	_, err = utils.CheckAuth(c)
+	if err != nil {
+		return c.Status(401).JSON(fiber.Map{"error": "Unauthorized"})
+	}
 
-    ctx := context.Background()
-    userResp, err := utils.AppConfig.DBClient.GetUserInfosUsersUserIdGetWithResponse(ctx, userId)
-    if err != nil {
-        log.Error(err)
-        return c.Status(500).JSON(fiber.Map{"error": "Error getting user"})
-    }
+	ctx := context.Background()
+	userResp, err := utils.AppConfig.DBClient.GetUserInfosUsersUserIdGetWithResponse(ctx, userId)
+	if err != nil {
+		log.Error(err)
+		return c.Status(500).JSON(fiber.Map{"error": "Error getting user"})
+	}
 
-    if userResp.StatusCode() == 404 {
-        return c.Status(404).JSON(fiber.Map{"error": "User not found"})
-    }
+	if userResp.StatusCode() == 404 {
+		return c.Status(404).JSON(fiber.Map{"error": "User not found"})
+	}
 
-    return c.JSON(userResp.JSON200)
+	return c.JSON(userResp.JSON200)
 }
-
 
 func GetMeMovies(c fiber.Ctx) error {
 	userId, err := utils.CheckAuth(c)
@@ -154,7 +154,12 @@ func PostMeMovies(c fiber.Ctx) error {
 	if err != nil {
 		return c.Status(401).JSON(utils.ApiError{Message: "Unauthorized"})
 	}
-	return proxy.Forward(fmt.Sprintf("%s/users/%d/movies/%s", utils.AppConfig.DBApiURL, userId, c.Params("movie_id")))(c)
+	// Refresh recommendations
+	dbError := proxy.Forward(fmt.Sprintf("%s/users/%d/movies/%s", utils.AppConfig.DBApiURL, userId, c.Params("movie_id")))(c)
+
+	http.Get(fmt.Sprintf("%s/queue/add/user/%d", utils.AppConfig.DBApiURL, userId))
+
+	return dbError
 }
 
 func DeleteMeMovies(c fiber.Ctx) error {
@@ -162,7 +167,12 @@ func DeleteMeMovies(c fiber.Ctx) error {
 	if err != nil {
 		return c.Status(401).JSON(utils.ApiError{Message: "Unauthorized"})
 	}
-	return proxy.Forward(fmt.Sprintf("%s/users/%d/movies/%s", utils.AppConfig.DBApiURL, userId, c.Params("movie_id")))(c)
+
+	dbError := proxy.Forward(fmt.Sprintf("%s/users/%d/movies/%s", utils.AppConfig.DBApiURL, userId, c.Params("movie_id")))(c)
+
+	http.Get(fmt.Sprintf("%s/queue/add/user/%d", utils.AppConfig.DBApiURL, userId))
+
+	return dbError
 }
 
 func GetUserMovies(c fiber.Ctx) error {

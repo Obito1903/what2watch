@@ -48,6 +48,7 @@ func main() {
 	utils.KeycloakConfig()
 	utils.DBApiConfig()
 	utils.TmdbConfig()
+	utils.EngineConfig()
 
 	users.RegisterUsersRoutes(app)
 	tmdb.RegisterTmdbRoutes(app)
