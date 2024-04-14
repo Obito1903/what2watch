@@ -2,6 +2,8 @@ package groups
 
 import (
 	"db/pkg/utils"
+	"fmt"
+	"net/http"
 
 	"github.com/gofiber/fiber/v3"
 )
@@ -33,6 +35,18 @@ func PostGroup(c fiber.Ctx) error {
 
 func GetGroup(c fiber.Ctx) error {
 	return utils.AuthProxyWrapper(c, utils.AppConfig.DBApiURL+"/groups/"+c.Params("group_id"))
+}
+
+func GetGroupRefreshRecommendations(c fiber.Ctx) error {
+	resp, err := http.Get(fmt.Sprintf("%s/queue/add/group?group_id=%s", utils.AppConfig.EngineUrl, c.Params("group_id")))
+	if err != nil {
+		return c.Status(500).JSON(utils.ApiError{Message: "Error refreshing recommendations"})
+	}
+	if resp.StatusCode != 200 {
+		return c.Status(500).JSON(utils.ApiError{Message: "Error refreshing recommendations"})
+	}
+
+	return c.Status(200).JSON(utils.ApiError{Message: "Recommendations refreshed"})
 }
 
 func GetGroupRecommendations(c fiber.Ctx) error {

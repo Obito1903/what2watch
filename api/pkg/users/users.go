@@ -157,7 +157,14 @@ func PostMeMovies(c fiber.Ctx) error {
 	// Refresh recommendations
 	dbError := proxy.Forward(fmt.Sprintf("%s/users/%d/movies/%s", utils.AppConfig.DBApiURL, userId, c.Params("movie_id")))(c)
 
-	http.Get(fmt.Sprintf("%s/queue/add/user/%d", utils.AppConfig.DBApiURL, userId))
+	res, err := http.Get(fmt.Sprintf("%s/queue/add/user?user_id=%d", utils.AppConfig.EngineUrl, userId))
+	if err != nil {
+		log.Error(err)
+		return c.Status(500).JSON(utils.ApiError{Message: "Error adding movie to queue"})
+	}
+	if res.StatusCode != 200 {
+		return c.Status(res.StatusCode).JSON(utils.ApiError{Message: "Error adding movie to queue"})
+	}
 
 	return dbError
 }

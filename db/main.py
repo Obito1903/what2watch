@@ -114,7 +114,7 @@ def remove_movie_from_watched(user_id: int, movie_id: int) -> ApiResponse:
 
 @app.get("/users/{user_id}/recommendations", status_code=200, tags=["Recommendations"])
 def get_recommendations(user_id: int) -> List[MovieReccomendationResponse]:
-    c.execute("""SELECT (movie_id,accuracy) FROM movie_user_recommendation WHERE user_id LIKE %s""" % (user_id))
+    c.execute("""SELECT movie_id,accuracy FROM movie_user_recommendation WHERE user_id LIKE %s""" % (user_id))
 
     res = c.fetchall()
     if res is None:
@@ -123,7 +123,7 @@ def get_recommendations(user_id: int) -> List[MovieReccomendationResponse]:
 
 @app.post("/users/{user_id}/recommendations", status_code=200, tags=["Recommendations"])
 def add_recommendations(user_id: int, rec: UserPostRecommendationRequest) -> ApiResponse:
-    sql = "INSERT INTO movie_user_recommendation (accuracy, user_id, movie_id) VALUES (%s, %s, %s)"
+    sql = "REPLACE INTO movie_user_recommendation (accuracy, user_id, movie_id) VALUES (%s, %s, %s)"
     values = (rec.accuracy, user_id, rec.movie_id)
 
     c.execute(sql, values)
@@ -244,11 +244,11 @@ def get_group_infos(group_id: int) -> GroupResponse:
     res = c.fetchone()
     if res is None:
         raise HTTPException(status_code=404, detail="Item not found")
-    
+
     return GroupResponse(group_id=res["group_id"], name=res["group_name"])
-    
-    
-    
+
+
+
 
 
 # GROUPS
@@ -261,7 +261,7 @@ def get_group_users(group_id: int) -> List[int]:
     res = c.fetchall()
     if res is None:
         raise HTTPException(status_code=404, detail="Item not found")
-    
+
     return [row['user_id'] for row in res]
 
 @app.put("/groups/{group_id}/users/{user_id}", status_code=200, tags=["Users from Groups"])
@@ -295,7 +295,7 @@ def get_group_recommendations(group_id: int) -> List[MovieReccomendationResponse
 
 @app.post("/groups/{group_id}/recommendations", status_code=200, tags=["Recommendations"])
 def add_group_recommendations(group_id: int, rec: GroupPostRecommendationRequest) -> ApiResponse:
-    sql = "INSERT INTO movie_group_recommendation (accuracy, group_id, movie_id) VALUES (%s, %s, %s, %s)"
+    sql = "REPLACE INTO movie_group_recommendation (accuracy, group_id, movie_id) VALUES (%s, %s, %s)"
     values = (rec.accuracy, group_id, rec.movie_id)
 
     c.execute(sql, values)

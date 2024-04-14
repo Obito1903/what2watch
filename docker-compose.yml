@@ -14,7 +14,7 @@ services:
     environment:
       AUTH_URL: http://keycloak:8080/realms/what2watch/protocol/openid-connect/userinfo
       DB_API_URL: http://db-api:8000
-      ENGINE_API_URL: http://engine:8000
+      ENGINE_URL: http://engine:8000
       TMDB_API_KEY: ${TMDB_API_KEY:-}
     labels:
       - traefik.enable=true
@@ -34,17 +34,12 @@ services:
     depends_on:
       - db-api
     environment:
-      DB_API_URL: http://db-api:8000
+      DB_API: http://db-api:8000
       TMDB_API_KEY: ${TMDB_API_KEY:-}
     labels:
       - traefik.enable=true
       - traefik.http.routers.engine.rule=Host(`engine.${DOMAIN:-localhost}`)
       - traefik.http.routers.engine.entrypoints=web,websecure
-    develop:
-      watch:
-        - action: rebuild
-          path: ./engine
-          target: /app
   db-api:
     build:
       context: ./db
