@@ -16,7 +16,7 @@
 	$: isPopoverVisible = false;
 
 	let review : string;
-
+	let MyMoviesID: number[] = [];
 	let topMovies: Movie[] = [];
 	let popularMovies: Movie[] = [];
 	let searchQuery = '';
@@ -73,6 +73,14 @@
 			togglePopover();
 		});
 	}
+
+	onMount(async () => {
+		api.getMyMovies().then((movies) => {
+			movies.forEach(m => {
+				MyMoviesID = [...MyMoviesID, m.movie_id];
+			});
+		});
+	});
 </script>
 
 <Card.Root>
@@ -82,7 +90,12 @@
 	<Card.Content>
 		<form class="flex w-full max-w-sm items-center space-x-2">
 			<Input placeholder="Search for a movie" bind:value={searchQuery} />
-			<Button type="submit">Search</Button>
+			<Button type="submit" on:click={() => {
+				api.searchMovies(searchQuery).then((movies) => {
+					console.log(movies);
+					// selectedMovies = movies;
+				});
+			}}>Search</Button>
 		</form>
 
 		<div class="mt-4 flex justify-center space-x-4">
@@ -169,6 +182,10 @@
 						<Button
 							class="mt-4"
 							on:click={() => {
+								if(MyMoviesID.includes(selectedMovie.id)){
+									alert("This movie is already in your list");
+									return;
+								}
 								addMovie(selectedMovie, Number(review));
 								isPopoverVisible = false;
 							}}>Add to my movies</Button

@@ -54,9 +54,6 @@
 		});
 	}
 
-	function togglePopover() {
-		isPopoverVisible = !isPopoverVisible;
-	}
 </script>
 
 <Card.Root>

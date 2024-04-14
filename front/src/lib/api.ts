@@ -60,6 +60,10 @@ export function deleteMovie(id: number) {
 export function getMovieGenres() {
   return get(`${API_URL}/tmdb/genres`);
 }
+
+export function searchMovies(query: string){
+  return fetch(`${API_URL}/tmdb/search?query=${query}`).then((res) => res.json());
+}
 // USERS
 export function getMe() {
 	return get(`${API_URL}/users/me`);
