@@ -16,7 +16,7 @@ func RegisterGroupsRoute(app *fiber.App) {
 	groups.Get("/:group_id", GetGroup)
 
 	groups.Get("/:group_id/recommendations", GetGroupRecommendations)
-
+	groups.Get("/:group_id/refresh_recommendations", GetGroupRefreshRecommendations)
 	groups.Get("/:group_id/users", GetGroupUsers)
 	groups.Put("/:group_id/users/:user_id", PutGroupUsers)
 	groups.Delete("/:group_id/users/:user_id", DeleteGroupMovies)
