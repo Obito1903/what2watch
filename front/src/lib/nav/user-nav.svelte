@@ -3,37 +3,38 @@
 	import * as Avatar from '$lib/registry/new-york/ui/avatar/index.js';
 	import { Button } from '$lib/registry/new-york/ui/button/index.js';
 
-	import { signIn, signOut } from '@auth/sveltekit/client';
 	import { page } from '$app/stores';
-	import { SignOut } from '@auth/sveltekit/components';
 	import { onMount } from 'svelte';
 	import { createUserInDB } from '$lib/user/user';
 	import { kc } from '$lib/stores';
 	import Keycloak from 'keycloak-js';
+	import { get } from 'svelte/store';
 
 	let username = '';
 	let email = '';
-	onMount(() =>  {
+	onMount(() => {
 		kc.subscribe((value) => {
-			if(value != undefined)
-			{
+			if (value != undefined) {
 				let keycloak = value as Keycloak;
 				email = keycloak.profile?.email ?? '';
 				username = keycloak.profile?.username ?? '';
 				keycloak.loadUserInfo().then((userInfo) => {
 					username = userInfo.preferred_username;
 					email = userInfo.email;
-				});	
+				});
 
 				createUserInDB();
-
 			}
 		});
 		// if($page.data.session?.user)
 		// {
-		// 
+		//
 		// }
 	});
+
+	const signOut = () => {
+		get(kc)?.logout();
+	};
 </script>
 
 <DropdownMenu.Root>
@@ -70,4 +71,3 @@
 		</DropdownMenu.Item>
 	</DropdownMenu.Content>
 </DropdownMenu.Root>
-

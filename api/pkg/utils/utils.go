@@ -3,7 +3,11 @@ package utils
 import (
 	"context"
 	"db/pkg/dbapi"
+	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 
 	tmdb "github.com/cyruzin/golang-tmdb"
@@ -49,39 +53,39 @@ func AuthProxyWrapper(c fiber.Ctx, addr string) error {
 }
 
 func CheckAuthKeycloak(c fiber.Ctx) (*UserInfo, error) {
-	token := c.Cookies("session-token")
-	fmt.Println(token)
-	return &UserInfo{
-		Sub:               "123",
-		Email:             "test@example.com",
-		PreferredUsername: "test",
-	}, nil
-	// req, err := http.NewRequest("GET", "http://auth.localhost/realms/what2watch/protocol/openid-connect/userinfo", nil)
-	// if err != nil {
-	// 	log.Error(fmt.Sprintf("Error creating request:\n%v", err))
-	// 	return nil, errors.New("error creating request")
-	// }
-	// req.Header.Add("Authorization", c.Get("Authorization"))
-	// res, err := http.DefaultClient.Do(req)
-	// if err != nil {
-	// 	log.Error(fmt.Sprintf("Error sending request:\n%v", err))
-	// 	return nil, errors.New("error sending request")
-	// }
-	// if res.StatusCode != 200 {
-	// 	log.Error(fmt.Sprintf("Error validating token: %v", res.Status))
-	// 	return nil, errors.New("error validating token")
-	// }
-	// body, err := io.ReadAll(res.Body)
-	// if err != nil {
-	// 	log.Error(fmt.Sprintf("Error reading response:\n%v", err))
-	// 	return nil, errors.New("error reading response")
-	// }
-	// userInfo := new(UserInfo)
-	// if err := json.Unmarshal(body, userInfo); err != nil {
-	// 	log.Error(fmt.Sprintf("Error parsing response:\n%v", err))
-	// 	return nil, errors.New("error parsing response")
-	// }
-	// return userInfo, nil
+	// token := c.Cookies("session-token")
+	// fmt.Println(token)
+	// return &UserInfo{
+	// 	Sub:               "123",
+	// 	Email:             "test@example.com",
+	// 	PreferredUsername: "test",
+	// }, nil
+	req, err := http.NewRequest("GET", "http://auth.localhost/realms/what2watch/protocol/openid-connect/userinfo", nil)
+	if err != nil {
+		log.Error(fmt.Sprintf("Error creating request:\n%v", err))
+		return nil, errors.New("error creating request")
+	}
+	req.Header.Add("Authorization", c.Get("Authorization"))
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		log.Error(fmt.Sprintf("Error sending request:\n%v", err))
+		return nil, errors.New("error sending request")
+	}
+	if res.StatusCode != 200 {
+		log.Error(fmt.Sprintf("Error validating token: %v", res.Status))
+		return nil, errors.New("error validating token")
+	}
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		log.Error(fmt.Sprintf("Error reading response:\n%v", err))
+		return nil, errors.New("error reading response")
+	}
+	userInfo := new(UserInfo)
+	if err := json.Unmarshal(body, userInfo); err != nil {
+		log.Error(fmt.Sprintf("Error parsing response:\n%v", err))
+		return nil, errors.New("error parsing response")
+	}
+	return userInfo, nil
 }
 
 type Config struct {
