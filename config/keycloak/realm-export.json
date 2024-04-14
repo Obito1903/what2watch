@@ -697,9 +697,9 @@
       "alwaysDisplayInConsole": true,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "http://what2watch.localhost/",
-        "http://localhost:3000/",
-        "http://localhost:5173/"
+        "http://what2watch.localhost/*",
+        "http://localhost:3000/*",
+        "http://localhost:5173/*"
       ],
       "webOrigins": [
         "*",
